@@ -120,16 +120,16 @@ include_directories( ${CERNVM_INCLUDE_DIRS} )
 #endif(WIN32)
 
 # Locate platform-dependant sources
-#if (WIN32)
-#	set ( PLATFORM_DIR ${PROJECT_SOURCE_DIR}/src/platform/win )
-#	file ( GLOB PLATFORM_SOURCES ${PLATFORM_DIR}/*.cpp ${PLATFORM_DIR}/*.rc )
-#elseif (APPLE)
-#	set ( PLATFORM_DIR ${PROJECT_SOURCE_DIR}/src/platform/osx )
-#	file ( GLOB PLATFORM_SOURCES ${PLATFORM_DIR}/*.mm  )
-#elseif (UNIX)
-#	set ( PLATFORM_DIR ${PROJECT_SOURCE_DIR}/src/platform/unix )
-#	file ( GLOB PLATFORM_SOURCES ${PLATFORM_DIR}/*.cpp  )
-#endif()
+if (WIN32)
+	set ( PLATFORM_DIR ${PROJECT_SOURCE_DIR}/src/platform/win )
+	file ( GLOB PLATFORM_SOURCES ${PLATFORM_DIR}/*.cpp ${PLATFORM_DIR}/*.rc )
+elseif (APPLE)
+	set ( PLATFORM_DIR ${PROJECT_SOURCE_DIR}/src/platform/osx )
+	file ( GLOB PLATFORM_SOURCES ${PLATFORM_DIR}/*.mm  )
+elseif (UNIX)
+	set ( PLATFORM_DIR ${PROJECT_SOURCE_DIR}/src/platform/unix )
+	file ( GLOB PLATFORM_SOURCES ${PLATFORM_DIR}/*.cpp  )
+endif()
 
 
 # Locate the daemon sources
@@ -164,6 +164,7 @@ if (APPLE)
 
 	# Sources
 	add_executable( ${PROJECT_NAME} MACOSX_BUNDLE
+		${PLATFORM_SOURCES}
 		${LAUNCH_SOURCE}
 		)
 
@@ -176,14 +177,14 @@ elseif (WIN32)
 
     # Sources
 	add_executable( ${PROJECT_NAME} WIN32
-#		${PLATFORM_SOURCES}
-#		${GEN_RESOURCES_C}
+		${PLATFORM_SOURCES}
 		${LAUNCH_SOURCE}
 		)
 
 else() #Linux
 	# Sources
 	add_executable( ${PROJECT_NAME}
+		${PLATFORM_SOURCES}
 		${LAUNCH_SOURCE}
 		)
 
@@ -220,8 +221,6 @@ elseif(COMPILER_SUPPORTS_CXX0X)
 elseif(COMPILER_SUPPORTS_CXX98)
 	add_compile_flags( ${PROJECT_NAME} -std=c++98 )
 	message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has C++98 standard flag support.")
-else()
-	message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++98 standard flag support. Please use a different C++ compiler.")
 endif()
 
 if(COMPILER_SUPPORTS_NO_DEPRECATED) #Because of Boost's usage of auto_ptr, which is deprecated
@@ -243,10 +242,10 @@ if (APPLE)
 	)
 
 	# Embed icon in the archive
-	set_source_files_properties(
-		${PLATFORM_DIR}/icon.icns PROPERTIES
-		MACOSX_PACKAGE_LOCATION Resources
-	)
+    #	set_source_files_properties(
+    #		${PLATFORM_DIR}/icon.icns PROPERTIES
+    #		MACOSX_PACKAGE_LOCATION Resources
+    #)
 endif()
 
 # Installation rules for linux (for archive packaging)
