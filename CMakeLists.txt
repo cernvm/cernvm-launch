@@ -28,7 +28,6 @@ endif()
 # Logging option
 option(LOGGING "Set to ON to enable verbose logging on screen" OFF)
 option(CRASH_REPORTING "Set to ON to enable crash reporting" OFF)
-# TODO what does this mean?
 set(SYSCONF_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/etc" CACHE STRING "The /etc configuration directory")
 
 # CernVM-Launch
@@ -150,6 +149,8 @@ include_directories( ${PROJECT_INCLUDES} )
 
 message(STATUS "PROJECT_NAME:${PROJECT_NAME}")
 
+# Create static library
+SET(BUILD_SHARED_LIBRARIES OFF)
 
 #############################################################
 # TARGET & LINK
@@ -167,7 +168,13 @@ if (APPLE)
 		)
 
 elseif (WIN32)
-	# Sources
+    #Fix: On CMake 3.5 it's trying to link dynamically
+    if (MSVC)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MT")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+    endif()
+
+    # Sources
 	add_executable( ${PROJECT_NAME} WIN32
 #		${PLATFORM_SOURCES}
 #		${GEN_RESOURCES_C}
@@ -193,8 +200,9 @@ endif()
 
 # Post-target Fixes for windows
 if (WIN32)
-	# Fix: OpenSSL builds are not built with safe exception handlers
-	add_link_flags( ${PROJECT_NAME} "/SAFESEH:NO" )
+    # Fix: OpenSSL builds are not built with safe exception handlers
+    # Fix2: without subsystem:console in does not find main function
+    add_link_flags( ${PROJECT_NAME} "/SAFESEH:NO /SUBSYSTEM:CONSOLE" )
 endif()
 
 # Enable C++98 standard
