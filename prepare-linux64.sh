@@ -9,9 +9,13 @@ if [ ! -z "$1" ]; then
 	shift
 fi
 
+echo "Acquiring required submodules [requires git]..."
+git submodule init
+git submodule update
+
 echo "Using following configuration: $CONFIG"
 
 [ ! -d $BUILDDIR ] && mkdir $BUILDDIR
+set -e
 cd $BUILDDIR
-#TODO add -Wno-dev flag to the release version
-cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DTARGET_ARCH="x86_64" $*
+cmake .. -Wno-dev -DCMAKE_BUILD_TYPE=${CONFIG} -DTARGET_ARCH="x86_64" $*

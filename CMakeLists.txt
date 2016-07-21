@@ -144,7 +144,7 @@ file (GLOB LAUNCH_HEADER_FILES
 set(LAUNCH_SOURCE ${LAUNCH_SOURCE_FILES} ${LAUNCH_HEADER_FILES})
 
 # Setup includes
-include_directories( ${PROJECT_SOURCE_DIR}/inc )
+include_directories( ${PROJECT_SOURCE_DIR}/include )
 include_directories( ${PROJECT_INCLUDES} )
 
 message(STATUS "PROJECT_NAME:${PROJECT_NAME}")
