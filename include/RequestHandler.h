@@ -7,8 +7,9 @@ namespace Launch {
 class RequestHandler {
     public:
         bool listCvmMachines();
+        bool listMachineDetail(const std::string& machineName);
         bool createMachine(const std::string& parameterMapFile, const std::string& userDataFile);
-        bool deleteMachine(const std::string& machineName);
+        bool destroyMachine(const std::string& machineName);
         bool startMachine(const std::string& machineName);
         bool stopMachine(const std::string& machineName);
 };

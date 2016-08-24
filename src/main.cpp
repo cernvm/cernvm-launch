@@ -1,5 +1,4 @@
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <map>
 
@@ -22,12 +21,12 @@ bool CheckArgCount(int argc, int desiredCount, const std::string& errorMessageOn
 const int ERR_OK = 0; //success
 const int ERR_INVALID_PARAM_COUNT = 1;
 const int ERR_INVALID_OPERATION = 2;
+const int ERR_RUNTIME_ERROR = 3;
 
 }
 
 
 int main(int argc, char** argv) {
-
     Launch::RequestHandler handler;
 
     int exitCode = DispatchArguments(argc, argv, handler);
@@ -47,28 +46,32 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
         return ERR_INVALID_PARAM_COUNT;
     }
     std::string action = argv[1];
+    bool success = true;
 
     if (action == "list")
-        handler.listCvmMachines();
+        if (argc == 3) //the user requested details of a machine
+            success = handler.listMachineDetail(argv[2]);
+        else
+            success = handler.listCvmMachines();
     else if (action == "create") {
         if (!CheckArgCount(argc, 4, "'create' requires two arguments: configuration_file and userData_file"))
             return ERR_INVALID_PARAM_COUNT;
-        handler.createMachine(argv[2], argv[3]);
+        success = handler.createMachine(argv[2], argv[3]);
     }
     else if (action == "start") {
         if (!CheckArgCount(argc, 3, "'start' requires one argument: machine name"))
             return ERR_INVALID_PARAM_COUNT;
-        handler.startMachine(argv[2]);
+        success = handler.startMachine(argv[2]);
     }
     else if (action == "stop") {
         if (!CheckArgCount(argc, 3, "'stop' requires one argument: machine name"))
             return ERR_INVALID_PARAM_COUNT;
-        handler.stopMachine(argv[2]);
+        success = handler.stopMachine(argv[2]);
     }
-    else if (action == "delete") {
-        if (!CheckArgCount(argc, 3, "'delete' requires one argument: machine name"))
+    else if (action == "destroy") {
+        if (!CheckArgCount(argc, 3, "'destroy' requires one argument: machine name"))
             return ERR_INVALID_PARAM_COUNT;
-        handler.deleteMachine(argv[2]);
+        success = handler.destroyMachine(argv[2]);
     }
     else if (action == "-h" || action == "--help") {
         PrintHelp();
@@ -79,7 +82,10 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
         return ERR_INVALID_OPERATION;
     }
 
-    return ERR_OK;
+    if (success)
+        return ERR_OK;
+    else
+        return ERR_RUNTIME_ERROR;
 }
 
 
