@@ -73,7 +73,7 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
             return ERR_INVALID_PARAM_COUNT;
         success = handler.destroyMachine(argv[2]);
     }
-    else if (action == "-h" || action == "--help") {
+    else if (action == "-h" || action == "--help" || action == "help") {
         PrintHelp();
         return ERR_OK;
     }
