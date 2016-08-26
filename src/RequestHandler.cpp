@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -49,8 +50,6 @@ bool Launch::RequestHandler::listCvmMachines() {
 
     //load previously stored sessions
     hv->loadSessions();
-
-    paramMapType paramMap;
     sessionMapType sessions = hv->sessions;
 
     for(sessionMapType::iterator it=sessions.begin(); it != sessions.end(); ++it) {
@@ -60,11 +59,44 @@ bool Launch::RequestHandler::listCvmMachines() {
         std::string cvmVersion = session->parameters->get("cernvmVersion", "");
         std::string apiPort = session->local->get("apiPort", "");
 
-        if (!name.empty() && !cvmVersion.empty()) //we've got a CVM machine
+        if (!name.empty() && !cvmVersion.empty())
             std::cout << name << ":\tCVM: " << cvmVersion << "\tport: " << apiPort << std::endl;
     }
 
     return true;
+}
+
+
+bool Launch::RequestHandler::listRunningCvmMachines() {
+    HVInstancePtr hv = detectHypervisor();
+    if (!hv)
+        return false;
+
+    //load previously stored sessions
+    hv->loadSessions();
+
+    sessionMapType sessions = hv->sessions;
+    if (sessions.size() == 0) //no our sessions
+        return true;
+
+    std::vector<std::string> runningVms = hv->getRunningMachines();
+
+    for(sessionMapType::iterator it=sessions.begin(); it != sessions.end(); ++it) {
+        HVSessionPtr session = it->second;
+
+        std::string name = session->parameters->get("name", "");
+        std::string cvmVersion = session->parameters->get("cernvmVersion", "");
+        std::string apiPort = session->local->get("apiPort", "");
+
+        if (!name.empty() && !cvmVersion.empty()
+                && std::find(runningVms.begin(), runningVms.end(), name) != runningVms.end()) {
+            //we've got a CVM machine, which is running
+            std::cout << name << ":\tCVM: " << cvmVersion << "\tport: " << apiPort << std::endl;
+        }
+    }
+
+    return true;
+
 }
 
 

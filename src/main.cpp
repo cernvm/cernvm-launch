@@ -49,8 +49,12 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
     bool success = true;
 
     if (action == "list")
-        if (argc == 3) //the user requested details of a machine
-            success = handler.listMachineDetail(argv[2]);
+        if (argc == 3) {
+            if (std::string(argv[2]) == "--running") //list only running machines
+                success = handler.listRunningCvmMachines();
+            else //the user requested details of a machine
+                success = handler.listMachineDetail(argv[2]);
+        }
         else
             success = handler.listCvmMachines();
     else if (action == "create") {
