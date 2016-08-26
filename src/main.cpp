@@ -48,6 +48,7 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
     std::string action = argv[1];
     bool success = true;
 
+    //list VMs
     if (action == "list")
         if (argc == 3) {
             if (std::string(argv[2]) == "--running") //list only running machines
@@ -57,30 +58,46 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
         }
         else
             success = handler.listCvmMachines();
+    //create a VM
     else if (action == "create") {
-        if (!CheckArgCount(argc, 4, "'create' requires two arguments: configuration_file and userData_file"))
+        //E.g: ./cernvm-launch create --no-start config_file userData_file
+        if (argc == 5) {
+            if (std::string(argv[2]) != "--no-start") {
+                std::cerr << "'create' requires two arguments: configuration_file and userData_file" << std::endl;
+                return ERR_INVALID_PARAM_COUNT;
+            }
+            success = handler.createMachine(argv[3], argv[4], false);
+        }
+        //E.g: ./cernvm-launch create config_file userData_file
+        else if (CheckArgCount(argc, 4, "'create' requires two arguments: configuration_file and userData_file"))
+            success = handler.createMachine(argv[2], argv[3], true);
+        else
             return ERR_INVALID_PARAM_COUNT;
-        success = handler.createMachine(argv[2], argv[3]);
     }
+    //start a VM
     else if (action == "start") {
         if (!CheckArgCount(argc, 3, "'start' requires one argument: machine name"))
             return ERR_INVALID_PARAM_COUNT;
         success = handler.startMachine(argv[2]);
     }
+    //stop a VM
     else if (action == "stop") {
         if (!CheckArgCount(argc, 3, "'stop' requires one argument: machine name"))
             return ERR_INVALID_PARAM_COUNT;
         success = handler.stopMachine(argv[2]);
     }
+    //destroy a VM
     else if (action == "destroy") {
         if (!CheckArgCount(argc, 3, "'destroy' requires one argument: machine name"))
             return ERR_INVALID_PARAM_COUNT;
         success = handler.destroyMachine(argv[2]);
     }
+    //print help
     else if (action == "-h" || action == "--help" || action == "help") {
         PrintHelp();
         return ERR_OK;
     }
+    //unknown action
     else {
         std::cerr << "Invalid operation\n";
         return ERR_INVALID_OPERATION;

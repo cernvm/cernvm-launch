@@ -139,8 +139,7 @@ bool Launch::RequestHandler::listMachineDetail(const std::string& machineName) {
 }
 
 
-//TODO add --no-start flag
-bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, const std::string& userDataFile) {
+bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, const std::string& userDataFile, bool startMachine) {
 
     std::map<const std::string, const std::string> paramMap;
     bool res = LoadFileIntoMap(parameterMapFile, paramMap);
@@ -162,7 +161,6 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
     }
 
     paramMap.insert(std::make_pair<const std::string, const std::string>("userData", static_cast<const std::string>(userData)));
-
 
     HVInstancePtr hv = detectHypervisor();
     if (!hv)
@@ -205,9 +203,15 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
         return false;
     }
 
+    //we need to start the session, so the creation process gets initiated
     ParameterMapPtr emptyMap = ParameterMap::instance(); //we don't want to specify additional parameters
     session->start(emptyMap);
     session->wait(); //wait for the session until it finishes all tasks
+
+    if (!startMachine) { //stop the session if required
+        session->stop();
+        session->wait();
+    }
 
     return true;
 }

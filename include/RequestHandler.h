@@ -6,10 +6,11 @@ namespace Launch {
 //Handles user requests, providing appropriate response.
 class RequestHandler {
     public:
+        //TODO document the methods
         bool listCvmMachines();
         bool listRunningCvmMachines();
         bool listMachineDetail(const std::string& machineName);
-        bool createMachine(const std::string& parameterMapFile, const std::string& userDataFile);
+        bool createMachine(const std::string& parameterMapFile, const std::string& userDataFile, bool startMachine=true);
         bool destroyMachine(const std::string& machineName);
         bool startMachine(const std::string& machineName);
         bool stopMachine(const std::string& machineName);
