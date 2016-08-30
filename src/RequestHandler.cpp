@@ -25,7 +25,7 @@
 //helper functions and definitions in an anonymous namespace
 namespace {
 
-bool CheckMandatoryParameters(const ParameterMapPtr& parameters);
+bool CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& missingParameter);
 HVSessionPtr FindSessionByName(const std::string& machineName, HVInstancePtr& hypervisor, bool loadSessions=false);
 bool LoadFileIntoMap(const std::string& filename, std::map<const std::string, const std::string>& outMap);
 bool LoadFileIntoString(const std::string& filename, std::string& output);
@@ -140,7 +140,6 @@ bool Launch::RequestHandler::listMachineDetail(const std::string& machineName) {
 
 
 bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, const std::string& userDataFile, bool startMachine) {
-
     std::map<const std::string, const std::string> paramMap;
     bool res = LoadFileIntoMap(parameterMapFile, paramMap);
 
@@ -174,8 +173,9 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
     hv->loadSessions();
     sessionMapType sessions = hv->sessions;
 
-    if (!CheckMandatoryParameters(parameters)) {
-        std::cerr << "Missing parameters, cannot create\n";
+    std::string missingParameter;
+    if (!CheckMandatoryParameters(parameters, missingParameter)) {
+        std::cerr << "Cannot create a virtual machine, missing parameter: " << missingParameter << std::endl;
         return false;
     }
 
@@ -189,10 +189,8 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
     //allocate a new session
     HVSessionPtr session = hv->allocateSession();
 
-    parameters->fromMap(&paramMap);
-    //mark the parameters as initialized
+    //load our parameters into the newly created session
     session->parameters->fromParameters(parameters, false, true); //don't clear defaults, but overwrite local keys
-
     session->wait();
 
     //get our newly allocated session and open it (i.e. start the FSM => initiate the creation)
@@ -284,12 +282,22 @@ namespace {
 
 //Checks mandatory parameters for a VM creation.
 //Returns false if any is missing.
-bool CheckMandatoryParameters(const ParameterMapPtr& parameters) {
-    if (parameters->get("name", "").empty())
-        return false;
+bool CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& missingParameter) {
+    std::vector<std::string> mandatoryParams = {
+        "name",
+    };
+
+    for (std::vector<std::string>::iterator it = mandatoryParams.begin(); it != mandatoryParams.end(); ++it) {
+        if (parameters->get(*it, "").empty()) {
+            missingParameter = *it;
+            return false;
+        }
+    }
 
     return true;
 }
+
+
 //Find and opens a session with the corresponding machineName. If 'loadSession' flag
 //is true, we load sessions on the hypervisor. Defaults to false.
 HVSessionPtr FindSessionByName(const std::string& machineName, HVInstancePtr& hypervisor, bool loadSessions) {
@@ -326,7 +334,6 @@ bool LoadFileIntoMap(const std::string& filename, std::map<const std::string, co
     if (!ifs.good()) //error when opening a file
         return false;
 
-    //TODO what about unicode characters?
     for (std::string line; std::getline(ifs, line); ) { //for each line in the input
         std::string key, value;
         size_t len = line.size();
@@ -364,7 +371,6 @@ bool LoadFileIntoString(const std::string& filename, std::string& output) {
     if (!ifs.good()) //error when opening a file
         return false;
 
-    //TODO what about unicode characters?
     for (std::string line; std::getline(ifs, line); ) { //for each line in the input
         output += line;
         output += "\n"; //std::getline discards the newline
@@ -373,7 +379,7 @@ bool LoadFileIntoString(const std::string& filename, std::string& output) {
     return true;
 }
 
-//Print specified files from the given parameter map
+//Print specified items from the given parameter map
 void PrintParameters(const std::vector<std::string>& fields, ParameterMapPtr paramMap) {
     std::vector<std::string>::const_iterator it = fields.begin();
     for (; it != fields.end(); ++it) {
