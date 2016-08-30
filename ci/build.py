@@ -13,17 +13,20 @@ import os, sys, subprocess
 
 # Run platform and machine dependant preparation/build script.
 def RunPreparationScript():
+    ciDir = os.path.dirname(os.path.abspath(__file__))  # our config scripts are in the same dir as this file
     prepareScript = ""
 
     if RunningOnWin():
-        prepareScript += "./prepare-vs2013-vt120_xp.bat"
+        prepareScript = "prepare-vs2013-vt120_xp.bat"
     elif RunningOnMac():
-        prepareScript += "./prepare-osx.sh"
+        prepareScript = "prepare-osx.sh"
     elif RunningOnLinux():
-        prepareScript += "./prepare-linux64.sh"
+        prepareScript = "prepare-linux64.sh"
     else:
         PrintErr("Unknown OS: %s" % os.name)
         return -1
+
+    prepareScript = os.path.join(ciDir, prepareScript)
 
     print("Running preparation script: %s" % prepareScript)
     ec = RunCmd([prepareScript])
