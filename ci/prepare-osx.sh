@@ -16,7 +16,7 @@ $(cd .. && git submodule init && git submodule update)
 
 [ ! -d $BUILDDIR ] && mkdir $BUILDDIR
 cd $BUILDDIR
-cmake ../.. -DCMAKE_BUILD_TYPE=${CONFIG} -DCRASH_REPORTING=OFF -DLOGGING=OFF -DTARGET_ARCH="x86_64" \
+cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DCRASH_REPORTING=OFF -DLOGGING=OFF -DTARGET_ARCH="x86_64" \
         -DSYSTEM_CURL=ON \
         -DSYSTEM_JSONCPP=ON \
         -DSYSTEM_ZLIB=ON \
