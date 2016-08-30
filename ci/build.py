@@ -11,6 +11,7 @@ REPO_DIR="./cernvm-launch/"
 import os, sys, subprocess
 
 
+#TODO remove the CloneRepo and REPO_DIR
 # Clones the BRANCH of cernvm-launch repository to the REPO_DIR
 def CloneRepo():
     print("Cloning repository: %s" % REPO_URL)
@@ -27,14 +28,14 @@ def CloneRepo():
 
 # Run platform and machine dependant preparation/build script.
 def RunBuildScript():
-    prepareScript = REPO_DIR  # common prefix
+    prepareScript = ""
 
     if RunningOnWin():
-        prepareScript += "ci/prepare-vs2013-vt120_xp.bat"
+        prepareScript += "./prepare-vs2013-vt120_xp.bat"
     elif RunningOnMac():
-        prepareScript += "ci/prepare-osx.sh"
+        prepareScript += "./prepare-osx.sh"
     elif RunningOnLinux():
-        prepareScript += "ci/prepare-linux64.sh"
+        prepareScript += "./prepare-linux64.sh"
     else:
         PrintErr("Unknown OS: %s" % os.name)
         return -1
