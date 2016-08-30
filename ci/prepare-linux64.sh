@@ -1,9 +1,11 @@
 #!/bin/bash
 
+# Tailored for the cvm-build21 machine
+
 CONFIG=Release
 BUILDDIR=build
 
-#Let's use a newer compiler
+# Let's use a newer compiler
 export CMAKE_C_COMPILER='/opt/rh/devtoolset-2/root/usr/bin/gcc'
 export CMAKE_CXX_COMPILER='/opt/rh/devtoolset-2/root/usr/bin/g++'
 export CC='/opt/rh/devtoolset-2/root/usr/bin/gcc'
@@ -16,7 +18,7 @@ if [ ! -z "$1" ]; then
 fi
 
 echo "Acquiring required submodules [requires git]..."
-#Run it in subshell on purpose
+# Run it in subshell on purpose
 $(cd .. && git submodule init && git submodule update)
 
 echo "Using following configuration: $CONFIG"
