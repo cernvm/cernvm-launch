@@ -58,7 +58,7 @@ def Main():
     #    PrintErr("Unable to clone the repository")
     #    return 1
 
-    ec = RunBuildScript():
+    ec = RunBuildScript()
 
     if ec != 0:
         PrintErr("Error while running the build script")
