@@ -35,9 +35,9 @@ def RunPreparationScript():
 
 # Run the build command in the build folder.
 def RunBuildScript():
-    buildCmd = "cmake --build %s" % BUILD_DIR
+    buildCmd = ["cmake", "--build", BUILD_DIR]
 
-    print("Build command: %s" % buildCmd)
+    print("Build command: %s" % ' '.join(buildCmd))
     ec = RunCmd([buildCmd])
 
     return ec
