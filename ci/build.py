@@ -27,7 +27,7 @@ def RunPreparationScript():
 
     prepareScript = os.path.join(ciDir, prepareScript)
 
-    print("Running preparation script: %s" % prepareScript)
+    print("Preparation script: %s" % prepareScript)
     ec = RunCmd([prepareScript])
 
     return ec
@@ -37,7 +37,7 @@ def RunPreparationScript():
 def RunBuildScript():
     buildCmd = "cmake --build %s" % BUILD_DIR
 
-    print("Running build command: %s" % buildCmd)
+    print("Build command: %s" % buildCmd)
     ec = RunCmd([buildCmd])
 
     return ec
