@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
+import os, sys, subprocess
+
 # Cernvm-launch repository url
 REPO_URL = "https://github.com/cernvm/cernvm-launch/"
 # Branch to clone from the repository
 BRANCH = "devel"
 # Folder where the build files are created: parent directory to this file, build subdir
 BUILD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "build")
-
-
-import os, sys, subprocess
 
 
 # Run platform and machine dependant preparation/build script.
