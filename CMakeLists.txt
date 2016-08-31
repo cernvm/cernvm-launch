@@ -197,8 +197,10 @@ if (UNIX)
 	else()
 		add_compile_flags(${PROJECT_NAME} -m32)
 	endif()
-    # Needed because of Boost's usage of clock_gettime
-    add_link_flags( ${PROJECT_NAME} "-lrt" )
+    if (NOT APPLE)
+        # Needed only on Linux, because of Boost's usage of clock_gettime and regex module
+        add_link_flags( ${PROJECT_NAME} "-lrt -licui18n -licuuc -licudata" )
+	endif()
 endif()
 
 # Post-target Fixes for windows
