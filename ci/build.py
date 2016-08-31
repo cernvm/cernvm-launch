@@ -38,7 +38,7 @@ def RunBuildScript():
     buildCmd = ["cmake", "--build", BUILD_DIR]
 
     print("Build command: %s" % ' '.join(buildCmd))
-    ec = RunCmd([buildCmd])
+    ec = RunCmd(buildCmd)
 
     return ec
 
