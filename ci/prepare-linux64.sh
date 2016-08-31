@@ -19,7 +19,7 @@ fi
 
 echo "Acquiring required submodules [requires git]..."
 # Run it in subshell on purpose
-$(git submodule init && git submodule update)
+$("git submodule init" && "git submodule update")
 
 echo "Using following configuration: $CONFIG"
 
