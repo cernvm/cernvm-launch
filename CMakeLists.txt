@@ -34,6 +34,11 @@ set(SYSCONF_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/etc" CACHE STRING "The /etc con
 project (cernvm-launch)
 set(VERSION "0.0.1")
 
+# Create static library
+SET(BUILD_SHARED_LIBRARIES OFF)
+# libcernvm specific
+SET(BUILD_SHARED_LIBS OFF)
+
 ############################################################################################################ 
 # AddCompileLinkFlags module
 ############################################################################################################
@@ -104,20 +109,12 @@ include_directories( ${CERNVM_INCLUDE_DIRS} )
 #############################################################
 
 # Add custom definitions
-#if (LOGGING)
-#	add_definitions(-DLOGGING)
-#endif()
-#if (CRASH_REPORTING)
-#	add_definitions(-DCRASH_REPORTING)
-#endif()
-
-# Fixes for windows
-#if (WIN32)
-	# Fix: Disable Min/Max macros
-    #	ADD_DEFINITIONS(-DNOMINMAX)   
-	# Fix: For some reason CURL_STATICLIB is not defined
-    #	ADD_DEFINITIONS(-DCURL_STATICLIB)
-#endif(WIN32)
+if (LOGGING)
+	add_definitions(-DLOGGING)
+endif()
+if (CRASH_REPORTING)
+	add_definitions(-DCRASH_REPORTING)
+endif()
 
 # Locate platform-dependant sources
 if (WIN32)
@@ -148,9 +145,6 @@ include_directories( ${PROJECT_SOURCE_DIR}/include )
 include_directories( ${PROJECT_INCLUDES} )
 
 message(STATUS "PROJECT_NAME:${PROJECT_NAME}")
-
-# Create static library
-SET(BUILD_SHARED_LIBRARIES OFF)
 
 #############################################################
 # TARGET & LINK
@@ -205,6 +199,13 @@ endif()
 
 # Post-target Fixes for windows
 if (WIN32)
+    # Windows.h by default defines min/max macros, which collides with our variable names
+	# Fix: Disable Min/Max macros
+    add_definitions(-DNOMINMAX)
+
+	# Fix: For some reason CURL_STATICLIB is not defined
+    add_definitions(-DCURL_STATICLIB)
+
     # Fix: OpenSSL builds are not built with safe exception handlers
     # Fix2: without subsystem:console in does not find main function
     add_link_flags( ${PROJECT_NAME} "/SAFESEH:NO /SUBSYSTEM:CONSOLE" )
