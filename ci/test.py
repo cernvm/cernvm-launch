@@ -4,8 +4,10 @@ import os, sys, subprocess, re
 import ConfigParser
 
 
+# ./ci directory (where this script is) + added trailing path separator
+CI_DIR = os.path.dirname(os.path.abspath(__file__)) + os.sep
 # Directory where all the test files are (./ci/tests)
-TEST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tests")
+TEST_DIR = os.path.join(CI_DIR, "tests")
 
 
 # Main function, its exit code is also the exit code of the script
@@ -70,9 +72,11 @@ def RunTest(launchBinary, testFile):
 def ExecuteSection(launchBinary, configParser, section):
     cmdParams = configParser.get(section, "cmd_params")
     cmdParams = RemoveQuotes(cmdParams)
+    cmdParams = cmdParams.split() # split the cmdParams string
+    cmdParams = MacroReplace(cmdParams) # replace predefined macros
     expEc = int(configParser.get(section, "expected_ec"))
 
-    runCmdList = [launchBinary] + cmdParams.split() # split the cmdParams string and concatenate in
+    runCmdList = [launchBinary] + cmdParams
     expRegex = None # expected_output is optional
     if configParser.has_option(section, "expected_output_regex"):
         expRegex = configParser.get(section, "expected_output_regex")
@@ -95,7 +99,7 @@ def ExecuteSection(launchBinary, configParser, section):
             success = False
 
     if not success:
-        print("\t\tCommand args: %s" % cmdParams)
+        print("\t\tCommand args: %s" % ' '.join(cmdParams))
 
     return success
 
@@ -129,6 +133,21 @@ def RemoveQuotes(string):
         return string[1:length-1]
     else: # no quotes
         return string
+
+
+# Perform all macro replace operations on the given command list
+def MacroReplace(cmdList):
+    result = []
+    for elem in cmdList:
+        result.append(PathExpansion(elem))
+    return result
+
+
+# If the 'file:' pattern is present in the string, it gets replaced by the CI_DIR
+def PathExpansion(string):
+    if "file:" in string:
+        return string.replace("file:", CI_DIR)
+    return string
 
 
 # Run given command (list of arguments) in the OS shell
