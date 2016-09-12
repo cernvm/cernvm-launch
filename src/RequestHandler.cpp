@@ -36,8 +36,6 @@ typedef std::map<std::string, HVSessionPtr>             sessionMapType;
 
 }
 
-//TODO
-//  - add error messages printage on returns
 
 //-----------------------------------------------------------------------------
 // RequestHandler class
@@ -45,8 +43,10 @@ typedef std::map<std::string, HVSessionPtr>             sessionMapType;
 
 bool Launch::RequestHandler::listCvmMachines() {
     HVInstancePtr hv = detectHypervisor();
-    if (!hv)
+    if (!hv) {
+        std::cerr << "Unable to detect hypervisor\n";
         return false;
+    }
 
     //load previously stored sessions
     hv->loadSessions();
@@ -69,14 +69,16 @@ bool Launch::RequestHandler::listCvmMachines() {
 
 bool Launch::RequestHandler::listRunningCvmMachines() {
     HVInstancePtr hv = detectHypervisor();
-    if (!hv)
+    if (!hv) {
+        std::cerr << "Unable to detect hypervisor\n";
         return false;
+    }
 
     //load previously stored sessions
     hv->loadSessions();
 
     sessionMapType sessions = hv->sessions;
-    if (sessions.size() == 0) //no our sessions
+    if (sessions.size() == 0) //we have no our sessions
         return true;
 
     std::vector<std::string> runningVms = hv->getRunningMachines();
@@ -96,14 +98,15 @@ bool Launch::RequestHandler::listRunningCvmMachines() {
     }
 
     return true;
-
 }
 
 
 bool Launch::RequestHandler::listMachineDetail(const std::string& machineName) {
     HVInstancePtr hv = detectHypervisor();
-    if (!hv)
+    if (!hv) {
+        std::cerr << "Unable to detect hypervisor\n";
         return false;
+    }
 
     hv->loadSessions();
 
@@ -143,14 +146,18 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
     std::map<const std::string, const std::string> paramMap;
     bool res = LoadFileIntoMap(parameterMapFile, paramMap);
 
-    if (!res)
+    if (!res) {
+        std::cerr << "Error while parsing file: " << parameterMapFile << std::endl;
         return false;
+    }
 
     std::string userData;
     res = LoadFileIntoString(userDataFile, userData);
 
-    if (!res)
+    if (!res) {
+        std::cerr << "Error while parsing file: " << userDataFile << std::endl;
         return false;
+    }
 
     //if user accidentally specified userData in parameter map file, we overwrite it
     std::map<const std::string, const std::string>::iterator it = paramMap.find("userData");
@@ -162,8 +169,10 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
     paramMap.insert(std::make_pair<const std::string, const std::string>("userData", static_cast<const std::string>(userData)));
 
     HVInstancePtr hv = detectHypervisor();
-    if (!hv)
+    if (!hv) {
+        std::cerr << "Unable to detect hypervisor\n";
         return false;
+    }
 
     //create a parameter map from std::map
     ParameterMapPtr parameters = ParameterMap::instance();
@@ -217,12 +226,14 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
 
 bool Launch::RequestHandler::destroyMachine(const std::string& machineName) {
     HVInstancePtr hv = detectHypervisor();
-    if (!hv)
+    if (!hv) {
+        std::cerr << "Unable to detect hypervisor\n";
         return false;
+    }
 
     HVSessionPtr session = FindSessionByName(machineName, hv, true);
     if (!session) {
-        std::cerr << "Unable to find the machine\n";
+        std::cerr << "Unable to find the machine: " << machineName << std::endl;
         return false; //we didn't match the name
     }
 
@@ -243,12 +254,16 @@ bool Launch::RequestHandler::destroyMachine(const std::string& machineName) {
 
 bool Launch::RequestHandler::startMachine(const std::string& machineName) {
     HVInstancePtr hv = detectHypervisor();
-    if (!hv)
+    if (!hv) {
+        std::cerr << "Unable to detect hypervisor\n";
         return false;
+    }
 
     HVSessionPtr session = FindSessionByName(machineName, hv, true);
-    if (!session)
+    if (!session) {
+        std::cerr << "Unable to find the machine: " << machineName << std::endl;
         return false; //we didn't match the name
+    }
 
     ParameterMapPtr emptyMap = ParameterMap::instance(); //we don't want to specify additional parameters
     session->start(emptyMap);
@@ -261,8 +276,10 @@ bool Launch::RequestHandler::startMachine(const std::string& machineName) {
 
 bool Launch::RequestHandler::stopMachine(const std::string& machineName) {
     HVInstancePtr hv = detectHypervisor();
-    if (!hv)
+    if (!hv) {
+        std::cerr << "Unable to detect hypervisor\n";
         return false;
+    }
 
     HVSessionPtr session = FindSessionByName(machineName, hv, true);
     if (!session)
