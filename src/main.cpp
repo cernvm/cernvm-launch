@@ -115,7 +115,7 @@ void PrintHelp() {
               << "OPTIONS:\n"
               << "\tcreate [--no-start] CONFIGURATION_FILE USER_DATA_FILE\tCreate a machine with specified configuration and user data.\n"
               << "\tdestroy MACHINE_NAME\tDestroy an existing machine.\n"
-              << "\tlist [MACHINE_NAME]\tList all existing machines or a detailed info about one.\n"
+              << "\tlist [--running] [MACHINE_NAME]\tList all existing machines or a detailed info about one.\n"
               << "\tstart MACHINE_NAME\tStart an existing machine.\n"
               << "\tstop MACHINE_NAME\tStop an existing machine.\n"
               << "\t-h, --help\tPrint this help message.\n";
