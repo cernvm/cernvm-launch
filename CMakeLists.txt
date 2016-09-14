@@ -30,14 +30,19 @@ option(LOGGING "Set to ON to enable verbose logging on screen" OFF)
 option(CRASH_REPORTING "Set to ON to enable crash reporting" OFF)
 set(SYSCONF_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/etc" CACHE STRING "The /etc configuration directory")
 
+
 # CernVM-Launch
 project (cernvm-launch)
-set(VERSION "0.0.1")
+set(VERSION "0.1.0")
 
 # Create static library
 SET(BUILD_SHARED_LIBRARIES OFF)
 # libcernvm specific
 SET(BUILD_SHARED_LIBS OFF)
+# Erase default linker options
+SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
 
 ############################################################################################################ 
 # AddCompileLinkFlags module
@@ -184,16 +189,17 @@ else() #Linux
 
 endif()
 
+
+# TODO XXX new additions, move somewhere reasonable
+set_target_properties(${PROJECT_NAME} PROPERTIES LINK_SEARCH_END_STATIC 1)
+set_target_properties(${PROJECT_NAME} PROPERTIES LINK_SEARCH_START_STATIC 1)
+
 # On linux we should add a flag to define the architecture we are building for
 if (UNIX)
 	if ("${TARGET_ARCH}" STREQUAL "x86_64")
 		add_compile_flags(${PROJECT_NAME} -m64)
 	else()
 		add_compile_flags(${PROJECT_NAME} -m32)
-	endif()
-    if (NOT APPLE)
-        # Needed only on Linux, because of Boost's usage of clock_gettime and regex module
-        add_link_flags( ${PROJECT_NAME} "-lrt -licui18n -licuuc -licudata" )
 	endif()
 endif()
 
@@ -232,7 +238,6 @@ if(COMPILER_SUPPORTS_NO_DEPRECATED) #Because of Boost's usage of auto_ptr, which
     add_compile_flags( ${PROJECT_NAME} -Wno-deprecated )
     message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has -Wno-deprecated flag support, using it.")
 endif()
-
 
 # Libraries
 target_link_libraries ( ${PROJECT_NAME} ${CERNVM_LIBRARIES} )
