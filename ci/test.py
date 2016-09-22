@@ -2,6 +2,12 @@
 
 import os, sys, subprocess, re, time
 import ConfigParser
+try:
+    # try with the standard library (Python2.7 and newer)
+    from collections import OrderedDict
+except ImportError:
+    # fallback to Python 2.6-2.4 back-port
+    from ordereddict import OrderedDict
 
 
 # ./ci directory (where this script is) + added trailing path separator
@@ -53,9 +59,9 @@ def Main():
 
 
 # Run all sections in the given test files and return whether it was successful or not
-# Waits 15 seconds before executing next section (time for VirtualBox to manage things)
+# Waits 5 seconds before executing next section (time for VirtualBox to manage things)
 def RunTest(launchBinary, testFile):
-    config = ConfigParser.ConfigParser()
+    config = ConfigParser.ConfigParser(dict_type=OrderedDict) # specify dict_type to keep the order of sections
     config.read(os.path.join(TEST_DIR, testFile))
 
     sections = config.sections()
@@ -64,7 +70,7 @@ def RunTest(launchBinary, testFile):
         if not suc: # stop executing when one section fails
             return False
         if section != sections[-1]: # don't sleep after the last section
-            time.sleep(15)
+            time.sleep(5)
 
     print("\tOK")
     return True
