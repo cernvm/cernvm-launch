@@ -26,4 +26,6 @@ echo "Using following configuration: $CONFIG"
 [ ! -d $BUILDDIR ] && mkdir $BUILDDIR
 set -e
 cd $BUILDDIR
-cmake .. -DUSE_SYSTEM_LIBS=ON -DCMAKE_BUILD_TYPE=${CONFIG} -DTARGET_ARCH="x86_64" $*
+cmake .. -DCMAKE_BUILD_TYPE=${CONFIG} -DTARGET_ARCH="x86_64" \
+        -DSYSTEM_JSONCPP=ON \
+        -DSYSTEM_BOOST=ON $*

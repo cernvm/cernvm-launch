@@ -39,10 +39,15 @@ set(VERSION "0.1.0")
 SET(BUILD_SHARED_LIBRARIES OFF)
 # libcernvm specific
 SET(BUILD_SHARED_LIBS OFF)
+SET(CURL_DISABLE_LDAP TRUE)
 # Erase default linker options
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
-
+if(WIN32)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+else()
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+endif()
 
 ############################################################################################################ 
 # AddCompileLinkFlags module
