@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.6
 
-import os, sys, subprocess, re
+import os, sys, subprocess, re, time
 import ConfigParser
 
 
@@ -53,6 +53,7 @@ def Main():
 
 
 # Run all sections in the given test files and return whether it was successful or not
+# Waits 15 seconds before executing next section (time for VirtualBox to manage things)
 def RunTest(launchBinary, testFile):
     config = ConfigParser.ConfigParser()
     config.read(os.path.join(TEST_DIR, testFile))
@@ -62,13 +63,15 @@ def RunTest(launchBinary, testFile):
         suc = ExecuteSection(launchBinary, config, section)
         if not suc: # stop executing when one section fails
             return False
+        if section != sections[-1]: # don't sleep after the last section
+            time.sleep(15)
 
     print("\tOK")
     return True
 
 
 # Executes given section from the given config
-# Returns true if the section run successfully.
+# Returns true if the section run successfully
 def ExecuteSection(launchBinary, configParser, section):
     cmdParams = configParser.get(section, "cmd_params")
     cmdParams = RemoveQuotes(cmdParams)
