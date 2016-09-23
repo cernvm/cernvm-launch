@@ -10,11 +10,15 @@
 
 #include "RequestHandler.h"
 
-//Module local functions
 namespace {
 
+//CernVM-Launch version
+const std::string VERSION = "0.1.0";
+
+//Module local functions
 int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler);
 void PrintHelp();
+void PrintVersion();
 bool CheckArgCount(int argc, int desiredCount, const std::string& errorMessageOnFail);
 
 //list of error codes returned by the program
@@ -97,9 +101,15 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
         PrintHelp();
         return ERR_OK;
     }
+    //print version
+    else if (action == "-v" || action == "--version") {
+        PrintVersion();
+        return ERR_OK;
+    }
     //unknown action
     else {
-        std::cerr << "Invalid operation\n";
+        std::cerr << "Invalid operation\n\n";
+        PrintHelp();
         return ERR_INVALID_OPERATION;
     }
 
@@ -118,7 +128,13 @@ void PrintHelp() {
               << "\tlist [--running] [MACHINE_NAME]\tList all existing machines or a detailed info about one.\n"
               << "\tstart MACHINE_NAME\tStart an existing machine.\n"
               << "\tstop MACHINE_NAME\tStop an existing machine.\n"
-              << "\t-h, --help\tPrint this help message.\n";
+              << "\t-v, --version\t\tPrint version.\n"
+              << "\t-h, --help\t\tPrint this help message.\n";
+}
+
+
+void PrintVersion() {
+    std::cout << "CernVM-Launch " << VERSION << std::endl;
 }
 
 

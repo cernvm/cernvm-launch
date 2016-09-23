@@ -194,8 +194,7 @@ else() #Linux
 
 endif()
 
-
-# TODO XXX new additions, move somewhere reasonable
+# Create a static executable
 set_target_properties(${PROJECT_NAME} PROPERTIES LINK_SEARCH_END_STATIC 1)
 set_target_properties(${PROJECT_NAME} PROPERTIES LINK_SEARCH_START_STATIC 1)
 
