@@ -25,11 +25,11 @@
 //helper functions and definitions in an anonymous namespace
 namespace {
 
-bool CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& missingParameter);
+bool         CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& missingParameter);
 HVSessionPtr FindSessionByName(const std::string& machineName, HVInstancePtr& hypervisor, bool loadSessions=false);
-bool LoadFileIntoMap(const std::string& filename, std::map<const std::string, const std::string>& outMap);
-bool LoadFileIntoString(const std::string& filename, std::string& output);
-void PrintParameters(const std::vector<std::string>& fields, ParameterMapPtr paramMap);
+bool         LoadFileIntoMap(const std::string& filename, std::map<const std::string, const std::string>& outMap);
+bool         LoadFileIntoString(const std::string& filename, std::string& output);
+void         PrintParameters(const std::vector<std::string>& fields, ParameterMapPtr paramMap);
 
 typedef std::map<const std::string, const std::string>  paramMapType;
 typedef std::map<std::string, HVSessionPtr>             sessionMapType;
@@ -147,7 +147,7 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
     bool res = LoadFileIntoMap(parameterMapFile, paramMap);
 
     if (!res) {
-        std::cerr << "Error while parsing file: " << parameterMapFile << std::endl;
+        std::cerr << "Error while processing file: " << parameterMapFile << std::endl;
         return false;
     }
 
@@ -155,7 +155,7 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
     res = LoadFileIntoString(userDataFile, userData);
 
     if (!res) {
-        std::cerr << "Error while parsing file: " << userDataFile << std::endl;
+        std::cerr << "Error while processing file: " << userDataFile << std::endl;
         return false;
     }
 
@@ -252,6 +252,26 @@ bool Launch::RequestHandler::destroyMachine(const std::string& machineName) {
 }
 
 
+bool Launch::RequestHandler::pauseMachine(const std::string& machineName) {
+    HVInstancePtr hv = detectHypervisor();
+    if (!hv) {
+        std::cerr << "Unable to detect hypervisor\n";
+        return false;
+    }
+
+    HVSessionPtr session = FindSessionByName(machineName, hv, true);
+    if (!session) {
+        std::cerr << "Unable to find the machine: " << machineName << std::endl;
+        return false; //we didn't match the name
+    }
+
+    session->pause();
+    session->wait(); //wait for the session until it finishes all tasks
+
+    return true; //we started the session, we don't have to go through the rest of machines
+}
+
+
 bool Launch::RequestHandler::startMachine(const std::string& machineName) {
     HVInstancePtr hv = detectHypervisor();
     if (!hv) {
@@ -285,7 +305,7 @@ bool Launch::RequestHandler::stopMachine(const std::string& machineName) {
     if (!session)
         return false; //cannot open the session
 
-    session->stop();
+    session->hibernate(); //save state and stop
 
     session->wait(); //wait for the session until it finishes all tasks
 

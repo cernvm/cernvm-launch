@@ -53,7 +53,7 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
     bool success = true;
 
     //list VMs
-    if (action == "list")
+    if (action == "list") {
         if (argc == 3) {
             if (std::string(argv[2]) == "--running") //list only running machines
                 success = handler.listRunningCvmMachines();
@@ -62,6 +62,7 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
         }
         else
             success = handler.listCvmMachines();
+    }
     //create a VM
     else if (action == "create") {
         //E.g: ./cernvm-launch create --no-start config_file userData_file
@@ -77,6 +78,12 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
             success = handler.createMachine(argv[2], argv[3], true);
         else
             return ERR_INVALID_PARAM_COUNT;
+    }
+    //pause a VM
+    else if (action == "pause") {
+        if (!CheckArgCount(argc, 3, "'pause' requires one argument: machine name"))
+            return ERR_INVALID_PARAM_COUNT;
+        success = handler.pauseMachine(argv[2]);
     }
     //start a VM
     else if (action == "start") {
@@ -126,8 +133,9 @@ void PrintHelp() {
               << "\tcreate [--no-start] CONFIGURATION_FILE USER_DATA_FILE\tCreate a machine with specified configuration and user data.\n"
               << "\tdestroy MACHINE_NAME\tDestroy an existing machine.\n"
               << "\tlist [--running] [MACHINE_NAME]\tList all existing machines or a detailed info about one.\n"
+              << "\tpause MACHINE_NAME\tPause a running machine.\n"
               << "\tstart MACHINE_NAME\tStart an existing machine.\n"
-              << "\tstop MACHINE_NAME\tStop an existing machine.\n"
+              << "\tstop MACHINE_NAME\tStop a running machine.\n"
               << "\t-v, --version\t\tPrint version.\n"
               << "\t-h, --help\t\tPrint this help message.\n";
 }
