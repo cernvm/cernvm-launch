@@ -99,9 +99,12 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
     }
     //destroy a VM
     else if (action == "destroy") {
-        if (!CheckArgCount(argc, 3, "'destroy' requires one argument: machine name"))
+        if (argc == 4 && std::string(argv[2]) == "--force") // ./cernvm-launch destroy --force machine_name
+            success = handler.destroyMachine(argv[3], true); // force true
+        else if (!CheckArgCount(argc, 3, "'destroy' requires one argument: machine name"))
             return ERR_INVALID_PARAM_COUNT;
-        success = handler.destroyMachine(argv[2]);
+        else // ./cernvm-launch destroy machine_name
+            success = handler.destroyMachine(argv[2], false);
     }
     //print help
     else if (action == "-h" || action == "--help" || action == "help") {
@@ -131,7 +134,7 @@ void PrintHelp() {
     std::cout << "Usage: cernvm-launch OPTION\n"
               << "OPTIONS:\n"
               << "\tcreate [--no-start] CONFIGURATION_FILE USER_DATA_FILE\tCreate a machine with specified configuration and user data.\n"
-              << "\tdestroy MACHINE_NAME\tDestroy an existing machine.\n"
+              << "\tdestroy [--force] MACHINE_NAME\tDestroy an existing machine.\n"
               << "\tlist [--running] [MACHINE_NAME]\tList all existing machines or a detailed info about one.\n"
               << "\tpause MACHINE_NAME\tPause a running machine.\n"
               << "\tstart MACHINE_NAME\tStart an existing machine.\n"

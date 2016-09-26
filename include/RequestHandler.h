@@ -11,7 +11,7 @@ class RequestHandler {
         bool listRunningCvmMachines();
         bool listMachineDetail(const std::string& machineName);
         bool createMachine(const std::string& parameterMapFile, const std::string& userDataFile, bool startMachine=true);
-        bool destroyMachine(const std::string& machineName);
+        bool destroyMachine(const std::string& machineName, bool force=false);
         bool pauseMachine(const std::string& machineName);
         bool startMachine(const std::string& machineName);
         bool stopMachine(const std::string& machineName);

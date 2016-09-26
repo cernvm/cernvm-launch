@@ -18,11 +18,12 @@
 #include "RequestHandler.h"
 
 
+//Configuration file defines
 #define KEY_VALUE_SEPARATOR '='
 #define COMMENT_CHAR        '#'
 
 
-//helper functions and definitions in an anonymous namespace
+//helper functions and definitions in an anonymous namespace (local)
 namespace {
 
 bool         CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& missingParameter);
@@ -224,7 +225,7 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
 }
 
 
-bool Launch::RequestHandler::destroyMachine(const std::string& machineName) {
+bool Launch::RequestHandler::destroyMachine(const std::string& machineName, bool force) {
     HVInstancePtr hv = detectHypervisor();
     if (!hv) {
         std::cerr << "Unable to detect hypervisor\n";
@@ -243,9 +244,25 @@ bool Launch::RequestHandler::destroyMachine(const std::string& machineName) {
         return false;
     }
 
-    vboxSession->DestroyVM();
+    int ret = vboxSession->destroyVM();
     vboxSession->wait();
 
+    if (ret != HVE_OK) {
+        if (force) { //machine is probably running, stop it and try again
+            vboxSession->stop();
+            vboxSession->wait();
+            ret = vboxSession->destroyVM();
+            vboxSession->wait();
+            if (ret != HVE_OK) {
+                std::cerr << "Unable to delete the machine.\n";
+                return false;
+            }
+        }
+        else {
+            std::cerr << "Unable to delete the machine, probably it's running. Use '--force' to delete anyway.\n";
+            return false;
+        }
+    }
     hv->sessionDelete(session);
 
     return true;
@@ -317,8 +334,9 @@ bool Launch::RequestHandler::stopMachine(const std::string& machineName) {
 //-----------------------------------------------------------------------------
 namespace {
 
-//Checks mandatory parameters for a VM creation.
-//Returns false if any is missing.
+//Check mandatory parameters for a VM creation. If the 'secret' param is not present, we add
+//a default one (it's required for the sessionOpen)
+//Return false if any is missing.
 bool CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& missingParameter) {
     std::vector<std::string> mandatoryParams = {
         "name",
@@ -330,6 +348,9 @@ bool CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& mi
             return false;
         }
     }
+
+    if (parameters->get("secret", "").empty())
+        parameters->set("secret", "defaultSecret");
 
     return true;
 }
