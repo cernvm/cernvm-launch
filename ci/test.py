@@ -6,7 +6,7 @@ try:
     # try with the standard library (Python2.7 and newer)
     from collections import OrderedDict
 except ImportError:
-    # fallback to Python 2.6-2.4 back-port
+    # fallback to Python 2.4-2.6 back-port
     from ordereddict import OrderedDict
 
 

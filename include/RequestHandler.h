@@ -1,5 +1,12 @@
+/**
+ * Module for handling requests, via invoking appropriate libcernvm methods.
+ * Author: Petr Jirout, 2016
+ */
+
 #ifndef _REQUEST_HANDLER_H
 #define _REQUEST_HANDLER_H
+
+#include <string>
 
 namespace Launch {
 

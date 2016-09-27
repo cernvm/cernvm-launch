@@ -1,13 +1,15 @@
+/**
+ * Module for handling requests, via invoking appropriate libcernvm methods.
+ * Author: Petr Jirout, 2016
+ */
+
 #include <algorithm>
 #include <iostream>
-#include <fstream>
 #include <map>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/algorithm/string.hpp>
 
 #include <CernVM/Hypervisor.h>
 #include <CernVM/ParameterMap.h>
@@ -15,12 +17,11 @@
 #include <CernVM/Hypervisor/Virtualbox/VBoxCommon.h>
 #include <CernVM/Hypervisor/Virtualbox/VBoxSession.h>
 
+#include "Tools.h"
 #include "RequestHandler.h"
 
 
-//Configuration file defines
-#define KEY_VALUE_SEPARATOR '='
-#define COMMENT_CHAR        '#'
+using namespace Launch;
 
 
 //helper functions and definitions in an anonymous namespace (local)
@@ -28,9 +29,6 @@ namespace {
 
 bool         CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& missingParameter);
 HVSessionPtr FindSessionByName(const std::string& machineName, HVInstancePtr& hypervisor, bool loadSessions=false);
-bool         LoadFileIntoMap(const std::string& filename, std::map<const std::string, const std::string>& outMap);
-bool         LoadFileIntoString(const std::string& filename, std::string& output);
-void         PrintParameters(const std::vector<std::string>& fields, ParameterMapPtr paramMap);
 
 typedef std::map<const std::string, const std::string>  paramMapType;
 typedef std::map<std::string, HVSessionPtr>             sessionMapType;
@@ -42,7 +40,7 @@ typedef std::map<std::string, HVSessionPtr>             sessionMapType;
 // RequestHandler class
 //-----------------------------------------------------------------------------
 
-bool Launch::RequestHandler::listCvmMachines() {
+bool RequestHandler::listCvmMachines() {
     HVInstancePtr hv = detectHypervisor();
     if (!hv) {
         std::cerr << "Unable to detect hypervisor\n";
@@ -68,7 +66,7 @@ bool Launch::RequestHandler::listCvmMachines() {
 }
 
 
-bool Launch::RequestHandler::listRunningCvmMachines() {
+bool RequestHandler::listRunningCvmMachines() {
     HVInstancePtr hv = detectHypervisor();
     if (!hv) {
         std::cerr << "Unable to detect hypervisor\n";
@@ -102,7 +100,7 @@ bool Launch::RequestHandler::listRunningCvmMachines() {
 }
 
 
-bool Launch::RequestHandler::listMachineDetail(const std::string& machineName) {
+bool RequestHandler::listMachineDetail(const std::string& machineName) {
     HVInstancePtr hv = detectHypervisor();
     if (!hv) {
         std::cerr << "Unable to detect hypervisor\n";
@@ -135,17 +133,17 @@ bool Launch::RequestHandler::listMachineDetail(const std::string& machineName) {
         "rdpPort"
     };
 
-    PrintParameters(parametersFields, session->parameters);
-    PrintParameters(localFields, session->local);
+    Tools::PrintParameters(parametersFields, session->parameters);
+    Tools::PrintParameters(localFields, session->local);
     //PrintParameters(machineFields, session->machine);
 
     return true;
 }
 
 
-bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, const std::string& userDataFile, bool startMachine) {
+bool RequestHandler::createMachine(const std::string& parameterMapFile, const std::string& userDataFile, bool startMachine) {
     std::map<const std::string, const std::string> paramMap;
-    bool res = LoadFileIntoMap(parameterMapFile, paramMap);
+    bool res = Tools::LoadFileIntoMap(parameterMapFile, paramMap);
 
     if (!res) {
         std::cerr << "Error while processing file: " << parameterMapFile << std::endl;
@@ -153,7 +151,7 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
     }
 
     std::string userData;
-    res = LoadFileIntoString(userDataFile, userData);
+    res = Tools::LoadFileIntoString(userDataFile, userData);
 
     if (!res) {
         std::cerr << "Error while processing file: " << userDataFile << std::endl;
@@ -168,6 +166,16 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
     }
 
     paramMap.insert(std::make_pair<const std::string, const std::string>("userData", static_cast<const std::string>(userData)));
+
+    //Load missing values from the global config file
+    Tools::configMapTypePtr configMap = Tools::GetGlobalConfig();
+    if (configMap) {
+        Tools::AddMissingValuesToMap(paramMap, *configMap);
+    }
+
+    //TODO
+    //Load missing values from the hardcoded config
+    //Tools::AddMissingValuesToMap(paramMap, defaultParamMap);
 
     HVInstancePtr hv = detectHypervisor();
     if (!hv) {
@@ -216,6 +224,9 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
     session->start(emptyMap);
     session->wait(); //wait for the session until it finishes all tasks
 
+    //TODO check start return value? 
+    //TODO print used parameters
+
     if (!startMachine) { //stop the session if required
         session->stop();
         session->wait();
@@ -225,7 +236,7 @@ bool Launch::RequestHandler::createMachine(const std::string& parameterMapFile, 
 }
 
 
-bool Launch::RequestHandler::destroyMachine(const std::string& machineName, bool force) {
+bool RequestHandler::destroyMachine(const std::string& machineName, bool force) {
     HVInstancePtr hv = detectHypervisor();
     if (!hv) {
         std::cerr << "Unable to detect hypervisor\n";
@@ -269,7 +280,7 @@ bool Launch::RequestHandler::destroyMachine(const std::string& machineName, bool
 }
 
 
-bool Launch::RequestHandler::pauseMachine(const std::string& machineName) {
+bool RequestHandler::pauseMachine(const std::string& machineName) {
     HVInstancePtr hv = detectHypervisor();
     if (!hv) {
         std::cerr << "Unable to detect hypervisor\n";
@@ -289,7 +300,7 @@ bool Launch::RequestHandler::pauseMachine(const std::string& machineName) {
 }
 
 
-bool Launch::RequestHandler::startMachine(const std::string& machineName) {
+bool RequestHandler::startMachine(const std::string& machineName) {
     HVInstancePtr hv = detectHypervisor();
     if (!hv) {
         std::cerr << "Unable to detect hypervisor\n";
@@ -311,7 +322,7 @@ bool Launch::RequestHandler::startMachine(const std::string& machineName) {
 }
 
 
-bool Launch::RequestHandler::stopMachine(const std::string& machineName) {
+bool RequestHandler::stopMachine(const std::string& machineName) {
     HVInstancePtr hv = detectHypervisor();
     if (!hv) {
         std::cerr << "Unable to detect hypervisor\n";
@@ -381,71 +392,6 @@ HVSessionPtr FindSessionByName(const std::string& machineName, HVInstancePtr& hy
     return session;
 }
 
-
-//Load <string,string> map from a file with key=value items.
-//Lines starting with '#' are considered as comments, thus ignored.
-//Lines without KEY_VALUE_SEPARATOR (i.e. '=') are ignored as well
-//We do not store items with an empty value.
-bool LoadFileIntoMap(const std::string& filename, std::map<const std::string, const std::string>& outMap) {
-    std::ifstream ifs (filename);
-
-    if (!ifs.good()) //error when opening a file
-        return false;
-
-    for (std::string line; std::getline(ifs, line); ) { //for each line in the input
-        std::string key, value;
-        size_t len = line.size();
-        size_t i = 0;
-
-        //ignore comments
-        if (len == 0 || line[0] == COMMENT_CHAR)
-            continue;
-
-        while (i < len && line[i++] != KEY_VALUE_SEPARATOR) //read the key
-            key.push_back(line[i-1]);
-
-        while (i++ < len) //read the value
-            value.push_back(line[i-1]);
-
-        boost::trim(key);
-        boost::trim(value);
-        if (key.empty() || value.empty()) //ignore invalid lines: empty or without value
-            continue;
-        else { //put on the map (little cumbersome, since we have a const std::string map)
-            std::map<const std::string, const std::string>::iterator it = outMap.find(key);
-            if (it != outMap.end()) //the key already exists, erase it
-                outMap.erase(it);
-            outMap.insert(std::make_pair(key, value));
-        }
-    }
-    return true;
-}
-
-//Fill output string with the content of the given file.
-//If an error occurs, false is returned.
-bool LoadFileIntoString(const std::string& filename, std::string& output) {
-    std::ifstream ifs (filename);
-
-    if (!ifs.good()) //error when opening a file
-        return false;
-
-    for (std::string line; std::getline(ifs, line); ) { //for each line in the input
-        output += line;
-        output += "\n"; //std::getline discards the newline
-    }
-
-    return true;
-}
-
-//Print specified items from the given parameter map
-void PrintParameters(const std::vector<std::string>& fields, ParameterMapPtr paramMap) {
-    std::vector<std::string>::const_iterator it = fields.begin();
-    for (; it != fields.end(); ++it) {
-        std::string value = paramMap->get(*it, "");
-        if (! value.empty())
-            std::cout << "\t" << *it << ": " << value << std::endl;
-    }
-}
 
 } //anonymous namespace
 
