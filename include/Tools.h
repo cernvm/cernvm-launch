@@ -26,6 +26,7 @@ namespace Tools {
     //TODO add description
     void             AddMissingValuesToMap(configMapType& outMap, const configMapType& sourceMap);
     configMapTypePtr GetGlobalConfig();
+    bool             GetUserInput(std::string& outValue);
     bool             LoadGlobalConfig(std::map<const std::string, const std::string>& outMap);
     bool             LoadFileIntoMap(const std::string& filename, std::map<const std::string, const std::string>& outMap);
     bool             LoadFileIntoString(const std::string& filename, std::string& output);

@@ -27,6 +27,7 @@ const std::string VERSION = "0.1.0";
 //Module local functions
 bool             CheckArgCount(int argc, int desiredCount, const std::string& errorMessageOnFail);
 int              DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler);
+int              DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler);
 void             PrintHelp();
 void             PrintVersion();
 
@@ -97,42 +98,7 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
     }
     //create a VM
     else if (action == "create") {
-        //handler.createMachine(useData, boolStartOpt, paramFileOpt)
-        //Generic format: ./cernvm-launch create [--no-start] userData_file [config_file]
-        if (argc < 3) {
-            std::cerr << "'create' requires at least a 'user_data_file' argument" << std::endl;
-            return ERR_INVALID_PARAM_COUNT;
-        }
-        bool noStartFlag = false;
-        if (std::string(argv[2]) == "--no-start")
-            noStartFlag = true;
-
-        //./cernvm-launch create user_data_file
-        if (argc == 3) {
-            if (noStartFlag) { // we have only --no-start flag
-                std::cerr << "'create' requires at least a 'user_data_file' argument" << std::endl;
-                return ERR_INVALID_PARAM_COUNT;
-            }
-            success = handler.createMachine(argv[2], true);
-        }
-        //./cernvm-launch create userData.conf params.conf or ./cernvm-launch create --no-start user_data_file
-        else if (argc == 4) {
-            if (noStartFlag) // --no-start and userData
-                success = handler.createMachine(argv[3], false);
-            else // userData paramData
-                success = handler.createMachine(argv[2], true, argv[3]);
-        }
-        //./cernvm-launch create --no-start config_file userData_file
-        else if (argc == 5) {
-            if (noStartFlag)
-                success = handler.createMachine(argv[3], false, argv[4]);
-            else {
-                std::cerr << "'create' requires at most 3 parameters" << std::endl;
-                return ERR_INVALID_PARAM_COUNT;
-            }
-        }
-        else
-            return ERR_INVALID_PARAM_COUNT;
+        return DispatchCreateRequest(argc, argv, handler);
     }
     //pause a VM
     else if (action == "pause") {
@@ -177,6 +143,56 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
         PrintHelp();
         return ERR_INVALID_OPERATION;
     }
+
+    if (success)
+        return ERR_OK;
+    else
+        return ERR_RUNTIME_ERROR;
+}
+
+
+//Parse given arguments and invoke an appropriate method. Print error message on invalid input
+//Returns err code
+int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler) {
+    if (argc <= 1 || std::string(argv[1]) != "create")
+        return ERR_INVALID_OPERATION;
+    //handler.createMachine(useData, boolStartOpt, paramFileOpt)
+    //Generic format: ./cernvm-launch create [--no-start] userData_file [config_file]
+    if (argc < 3) {
+        std::cerr << "'create' requires at least a 'user_data_file' argument" << std::endl;
+        return ERR_INVALID_PARAM_COUNT;
+    }
+    bool noStartFlag = false;
+    if (std::string(argv[2]) == "--no-start")
+        noStartFlag = true;
+
+    bool success = false;
+    //./cernvm-launch create user_data_file
+    if (argc == 3) {
+        if (noStartFlag) { // we have only --no-start flag
+            std::cerr << "'create' requires at least a 'user_data_file' argument" << std::endl;
+            return ERR_INVALID_PARAM_COUNT;
+        }
+        success = handler.createMachine(argv[2], true);
+    }
+    //./cernvm-launch create userData.conf params.conf or ./cernvm-launch create --no-start user_data_file
+    else if (argc == 4) {
+        if (noStartFlag) // --no-start and userData
+            success = handler.createMachine(argv[3], false);
+        else // userData paramData
+            success = handler.createMachine(argv[2], true, argv[3]);
+    }
+    //./cernvm-launch create --no-start config_file userData_file
+    else if (argc == 5) {
+        if (noStartFlag)
+            success = handler.createMachine(argv[3], false, argv[4]);
+        else {
+            std::cerr << "'create' requires at most 3 parameters" << std::endl;
+            return ERR_INVALID_PARAM_COUNT;
+        }
+    }
+    else
+        return ERR_INVALID_PARAM_COUNT;
 
     if (success)
         return ERR_OK;

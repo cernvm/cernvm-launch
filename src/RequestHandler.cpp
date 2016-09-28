@@ -35,8 +35,8 @@ const paramMapType DefaultCreationParams = {
     {"apiPort", "22"},
     {"cernvmVersion", "2.6.9"},
     {"cpus", "1"},
-    {"memory", "512"},
-    {"disk", "5000"},
+    {"memory", "2048"},
+    {"disk", "20000"},
     {"executionCap", "100"},
     {"flags", "49"}, // 64bit, headful mode, graphical extensions
 };
@@ -371,6 +371,7 @@ bool RequestHandler::stopMachine(const std::string& machineName) {
 //-----------------------------------------------------------------------------
 namespace {
 
+
 //Check mandatory parameters for a VM creation. If the 'secret' param is not present, we add
 //a default one (it's required for the sessionOpen)
 //Return false if any is missing.
@@ -382,7 +383,12 @@ bool CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& mi
     for (std::vector<std::string>::iterator it = mandatoryParams.begin(); it != mandatoryParams.end(); ++it) {
         if (parameters->get(*it, "").empty()) {
             missingParameter = *it;
-            return false;
+            //Ask user and store it value
+            std::string userValue;
+            std::cout << "Enter '" << *it << "': ";
+            if (! Tools::GetUserInput(userValue))
+                return false;
+            parameters->set(*it, userValue);
         }
     }
 

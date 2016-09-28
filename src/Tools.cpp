@@ -40,6 +40,18 @@ configMapTypePtr GetGlobalConfig() {
 }
 
 
+//Get input from user (stdin) and trim it
+bool GetUserInput(std::string& outValue) {
+
+    std::getline(std::cin, outValue);
+    boost::trim(outValue);
+    if (outValue.empty())
+        return false;
+
+    return true;
+}
+
+
 //Load global config file (with default VM parameters and Launch configuration)
 bool LoadGlobalConfig(std::map<const std::string, const std::string>& outMap) {
     // systemPath changes the slashes to correct ones
