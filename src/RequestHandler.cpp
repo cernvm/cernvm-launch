@@ -5,8 +5,8 @@
 
 #include <algorithm>
 #include <iostream>
-#include <map>
 #include <utility>
+#include <map>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
@@ -27,13 +27,37 @@ using namespace Launch;
 //helper functions and definitions in an anonymous namespace (local)
 namespace {
 
+typedef Tools::configMapType  paramMapType;
+typedef std::map<std::string, HVSessionPtr>             sessionMapType;
+
+//If no parameters are provided (either via user param file or global config), these are used
+const paramMapType DefaultCreationParams = {
+    {"apiPort", "22"},
+    {"cernvmVersion", "2.6.9"},
+    {"cpus", "1"},
+    {"memory", "512"},
+    {"disk", "5000"},
+    {"executionCap", "100"},
+    {"flags", "49"}, // 64bit, headful mode, graphical extensions
+};
+
+//Fields to print while creating a machine
+const std::vector<std::string> CreationInfoFields = {
+    "name",
+    "cpus",
+    "memory",
+    "disk",
+    "executionCap",
+    "cernvmVersion",
+    "apiPort",
+//    "sharedFolder", //TODO add
+};
+
+
 bool         CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& missingParameter);
 HVSessionPtr FindSessionByName(const std::string& machineName, HVInstancePtr& hypervisor, bool loadSessions=false);
 
-typedef std::map<const std::string, const std::string>  paramMapType;
-typedef std::map<std::string, HVSessionPtr>             sessionMapType;
-
-}
+} //anonymous namespace
 
 
 //-----------------------------------------------------------------------------
@@ -141,25 +165,27 @@ bool RequestHandler::listMachineDetail(const std::string& machineName) {
 }
 
 
-bool RequestHandler::createMachine(const std::string& parameterMapFile, const std::string& userDataFile, bool startMachine) {
-    std::map<const std::string, const std::string> paramMap;
-    bool res = Tools::LoadFileIntoMap(parameterMapFile, paramMap);
-
-    if (!res) {
-        std::cerr << "Error while processing file: " << parameterMapFile << std::endl;
-        return false;
-    }
+bool RequestHandler::createMachine(const std::string& userDataFile, bool startMachine, const std::string& parameterMapFile) {
+    paramMapType paramMap;
 
     std::string userData;
-    res = Tools::LoadFileIntoString(userDataFile, userData);
+    bool res = Tools::LoadFileIntoString(userDataFile, userData);
 
     if (!res) {
         std::cerr << "Error while processing file: " << userDataFile << std::endl;
         return false;
     }
 
+    if (! parameterMapFile.empty()) {
+        res = Tools::LoadFileIntoMap(parameterMapFile, paramMap);
+        if (!res) {
+            std::cerr << "Error while processing file: " << parameterMapFile << std::endl;
+            return false;
+        }
+    }
+
     //if user accidentally specified userData in parameter map file, we overwrite it
-    std::map<const std::string, const std::string>::iterator it = paramMap.find("userData");
+    paramMapType::iterator it = paramMap.find("userData");
     if (it != paramMap.end()) {
         std::cout << "Ignoring the userData specified in the parameter file, using userData file instead\n";
         paramMap.erase(it);
@@ -173,9 +199,8 @@ bool RequestHandler::createMachine(const std::string& parameterMapFile, const st
         Tools::AddMissingValuesToMap(paramMap, *configMap);
     }
 
-    //TODO
     //Load missing values from the hardcoded config
-    //Tools::AddMissingValuesToMap(paramMap, defaultParamMap);
+    Tools::AddMissingValuesToMap(paramMap, DefaultCreationParams);
 
     HVInstancePtr hv = detectHypervisor();
     if (!hv) {
@@ -224,8 +249,9 @@ bool RequestHandler::createMachine(const std::string& parameterMapFile, const st
     session->start(emptyMap);
     session->wait(); //wait for the session until it finishes all tasks
 
-    //TODO check start return value? 
-    //TODO print used parameters
+    //TODO check start return value?  ^
+    std::cout << "Parameters used for the machine creation:\n";
+    Tools::PrintParameters(CreationInfoFields, session->parameters);
 
     if (!startMachine) { //stop the session if required
         session->stop();

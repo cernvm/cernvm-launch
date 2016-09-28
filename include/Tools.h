@@ -24,12 +24,12 @@ namespace Tools {
     typedef std::map<const std::string, const std::string>* configMapTypePtr;
 
     //TODO add description
-    void             AddMissingValuesToMap(configMapType& outMap, configMapType& sourceMap);
+    void             AddMissingValuesToMap(configMapType& outMap, const configMapType& sourceMap);
     configMapTypePtr GetGlobalConfig();
     bool             LoadGlobalConfig(std::map<const std::string, const std::string>& outMap);
     bool             LoadFileIntoMap(const std::string& filename, std::map<const std::string, const std::string>& outMap);
     bool             LoadFileIntoString(const std::string& filename, std::string& output);
-    void             PrintParameters(const std::vector<std::string>& fields, ParameterMapPtr paramMap);
+    void             PrintParameters(const std::vector<std::string>& fields, const ParameterMapPtr paramMap);
 } //namespace Tools
 } //namespace Launch
 

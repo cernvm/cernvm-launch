@@ -22,8 +22,8 @@ configMapType GlobalConfigMap;
 
 
 //Add non-existent items from sourceMap to outMap
-void AddMissingValuesToMap(configMapType& outMap, configMapType& sourceMap) {
-    configMapType::iterator it = sourceMap.begin();
+void AddMissingValuesToMap(configMapType& outMap, const configMapType& sourceMap) {
+    configMapType::const_iterator it = sourceMap.begin();
     for (; it != sourceMap.end(); ++it) {
         if (outMap.find(it->second) == outMap.end())
             outMap.insert(std::make_pair(it->first, it->second));
@@ -122,7 +122,7 @@ bool LoadFileIntoString(const std::string& filename, std::string& output) {
 }
 
 //Print specified items from the given parameter map
-void PrintParameters(const std::vector<std::string>& fields, ParameterMapPtr paramMap) {
+void PrintParameters(const std::vector<std::string>& fields, const ParameterMapPtr paramMap) {
     std::vector<std::string>::const_iterator it = fields.begin();
     for (; it != fields.end(); ++it) {
         std::string value = paramMap->get(*it, "");
