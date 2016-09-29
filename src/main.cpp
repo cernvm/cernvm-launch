@@ -233,7 +233,7 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
         paramMap.insert(std::make_pair(key, it->second));
     }
 
-    handler.createMachine(userDataFile, !noStartFlag, paramMap);
+    success = handler.createMachine(userDataFile, !noStartFlag, paramMap);
 
     if (success)
         return ERR_OK;
