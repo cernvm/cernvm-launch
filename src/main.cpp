@@ -34,8 +34,9 @@ void             PrintVersion();
 //list of error codes returned by the program
 const int ERR_OK = 0; //success
 const int ERR_INVALID_PARAM_COUNT = 1;
-const int ERR_INVALID_OPERATION = 2;
-const int ERR_RUNTIME_ERROR = 3;
+const int ERR_INVALID_PARAM_TYPE = 2;
+const int ERR_INVALID_OPERATION = 3;
+const int ERR_RUNTIME_ERROR = 4;
 
 
 } //anonymous namespace
@@ -154,45 +155,89 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
 //Parse given arguments and invoke an appropriate method. Print error message on invalid input
 //Returns err code
 int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler) {
+
+    //These parameters flags require a value, e.g. --ram 512
+    std::map<std::string, std::string> paramFlags = {
+        {"--memory", ""},
+        {"--cpus", ""},
+        {"--disk", ""},
+        {"--name", ""},
+    };
+    bool noStartFlag = false;
+    std::string userDataFile;
+    std::string paramFile;
+
     if (argc <= 1 || std::string(argv[1]) != "create")
         return ERR_INVALID_OPERATION;
-    //handler.createMachine(useData, boolStartOpt, paramFileOpt)
-    //Generic format: ./cernvm-launch create [--no-start] userData_file [config_file]
     if (argc < 3) {
         std::cerr << "'create' requires at least a 'user_data_file' argument" << std::endl;
         return ERR_INVALID_PARAM_COUNT;
     }
-    bool noStartFlag = false;
-    if (std::string(argv[2]) == "--no-start")
-        noStartFlag = true;
 
+    for (int i=2; i < argc; ++i) { // go through argv
+        if (std::string(argv[i]) == "--no-start") { // this flag has no value
+            noStartFlag = true;
+            continue;
+        }
+        bool matchedFlag = false;
+        std::map<const std::string, std::string>::iterator it = paramFlags.begin();
+        for (; it != paramFlags.end(); ++it) { // go through paramFlags
+            if (it->first == std::string(argv[i])) { // matched our paramFlag with argv
+                matchedFlag = true;
+                if (i+1 == argc) {
+                    std::cerr << "Missing value for: " << argv[i] << std::endl;
+                    return ERR_INVALID_PARAM_COUNT;
+                }
+                it->second = argv[++i]; //++i because we just consumed the next argument
+                break;
+            }
+        }
+        if (!matchedFlag) { // unrecognized param, must be the user file or param file
+            if (userDataFile.empty())
+                userDataFile = argv[i];
+            else if (paramFile.empty())
+                paramFile = argv[i];
+            else {
+                std::cerr << "Unrecognized parameter (" << argv[i] << ")\n";
+                return ERR_INVALID_PARAM_COUNT;
+            }
+        }
+    }
+    //handler.createMachine(useData, boolStartOpt, paramFileOpt)
+    //Generic format: ./cernvm-launch create [--no-start] [--memory NUM] [--disk NUM] [--cpus NUM] userData_file [config_file]
     bool success = false;
-    //./cernvm-launch create user_data_file
-    if (argc == 3) {
-        if (noStartFlag) { // we have only --no-start flag
-            std::cerr << "'create' requires at least a 'user_data_file' argument" << std::endl;
-            return ERR_INVALID_PARAM_COUNT;
-        }
-        success = handler.createMachine(argv[2], true);
-    }
-    //./cernvm-launch create userData.conf params.conf or ./cernvm-launch create --no-start user_data_file
-    else if (argc == 4) {
-        if (noStartFlag) // --no-start and userData
-            success = handler.createMachine(argv[3], false);
-        else // userData paramData
-            success = handler.createMachine(argv[2], true, argv[3]);
-    }
-    //./cernvm-launch create --no-start config_file userData_file
-    else if (argc == 5) {
-        if (noStartFlag)
-            success = handler.createMachine(argv[3], false, argv[4]);
-        else {
-            std::cerr << "'create' requires at most 3 parameters" << std::endl;
-            return ERR_INVALID_PARAM_COUNT;
-        }
-    }
-    else
+
+    if (userDataFile.empty()) {
+        std::cerr << "'create' requires at least a 'user_data_file' argument" << std::endl;
         return ERR_INVALID_PARAM_COUNT;
+    }
+
+    Tools::configMapType paramMap;
+    if (! paramFile.empty()) {
+        bool res = Tools::LoadFileIntoMap(paramFile, paramMap);
+        if (!res) {
+            std::cerr << "Error while processing file: " << paramFile << std::endl;
+            return ERR_INVALID_PARAM_TYPE;
+        }
+        std::cout << "Using parameter file: " << paramFile << std::endl;
+    }
+    //add parameters from command line (they have preference)
+
+    std::map<std::string, std::string>::iterator it = paramFlags.begin();
+    for (; it != paramFlags.end(); ++it) {
+        if ((it->second).empty())
+            continue;
+        std::string key = (it->first).substr(2); // remove the '--'
+        if (paramMap.find(key) != paramMap.end())
+            paramMap.erase(paramMap.find(key));
+        paramMap.insert(std::make_pair(key, it->second));
+    }
+
+    //TODO remove
+    for (Tools::configMapType::iterator it = paramMap.begin(); it != paramMap.end(); ++it)
+        std::cout << it->first << ": " << it->second << std::endl;
+
+    handler.createMachine(userDataFile, !noStartFlag, paramMap);
 
     if (success)
         return ERR_OK;
@@ -204,7 +249,7 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
 void PrintHelp() {
     std::cout << "Usage: cernvm-launch OPTION\n"
               << "OPTIONS:\n"
-              << "\tcreate [--no-start] USER_DATA_FILE [CONFIGURATION_FILE]\tCreate a machine with specified user data.\n"
+              << "\tcreate [--no-start] [--memory NUM] [--disk NUM] [--cpus NUM] USER_DATA_FILE [CONFIGURATION_FILE]\tCreate a machine with specified user data.\n"
               << "\tdestroy [--force] MACHINE_NAME\tDestroy an existing machine.\n"
               << "\tlist [--running] [MACHINE_NAME]\tList all existing machines or a detailed info about one.\n"
               << "\tpause MACHINE_NAME\tPause a running machine.\n"

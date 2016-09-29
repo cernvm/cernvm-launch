@@ -17,7 +17,6 @@
 #include <CernVM/Hypervisor/Virtualbox/VBoxCommon.h>
 #include <CernVM/Hypervisor/Virtualbox/VBoxSession.h>
 
-#include "Tools.h"
 #include "RequestHandler.h"
 
 
@@ -165,23 +164,13 @@ bool RequestHandler::listMachineDetail(const std::string& machineName) {
 }
 
 
-bool RequestHandler::createMachine(const std::string& userDataFile, bool startMachine, const std::string& parameterMapFile) {
-    paramMapType paramMap;
-
+bool RequestHandler::createMachine(const std::string& userDataFile, bool startMachine, Tools::configMapType& paramMap) {
     std::string userData;
     bool res = Tools::LoadFileIntoString(userDataFile, userData);
 
     if (!res) {
         std::cerr << "Error while processing file: " << userDataFile << std::endl;
         return false;
-    }
-
-    if (! parameterMapFile.empty()) {
-        res = Tools::LoadFileIntoMap(parameterMapFile, paramMap);
-        if (!res) {
-            std::cerr << "Error while processing file: " << parameterMapFile << std::endl;
-            return false;
-        }
     }
 
     //if user accidentally specified userData in parameter map file, we overwrite it
@@ -372,7 +361,9 @@ bool RequestHandler::stopMachine(const std::string& machineName) {
 namespace {
 
 
-//Check mandatory parameters for a VM creation. If the 'secret' param is not present, we add
+//Check mandatory parameters for a VM creation.
+//If any is missing, we ask user for it
+//If the 'secret' param is not present, we add
 //a default one (it's required for the sessionOpen)
 //Return false if any is missing.
 bool CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& missingParameter) {
@@ -383,7 +374,7 @@ bool CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& mi
     for (std::vector<std::string>::iterator it = mandatoryParams.begin(); it != mandatoryParams.end(); ++it) {
         if (parameters->get(*it, "").empty()) {
             missingParameter = *it;
-            //Ask user and store it value
+            //Ask user and store the value
             std::string userValue;
             std::cout << "Enter '" << *it << "': ";
             if (! Tools::GetUserInput(userValue))

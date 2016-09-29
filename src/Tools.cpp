@@ -72,6 +72,7 @@ bool LoadGlobalConfig(std::map<const std::string, const std::string>& outMap) {
 //Lines starting with '#' are considered as comments, thus ignored.
 //Lines without KEY_VALUE_SEPARATOR (i.e. '=') are ignored as well
 //Values can be quoted either with single or double quotes (quotes are discarded).
+//Existing values in the map are overwrited with a new value
 //We do not store items with an empty value.
 bool LoadFileIntoMap(const std::string& filename, std::map<const std::string, const std::string>& outMap) {
     std::ifstream ifs (filename);

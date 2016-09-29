@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "Tools.h"
+
 namespace Launch {
 
 //Handles user requests, providing appropriate response.
@@ -17,7 +19,7 @@ class RequestHandler {
         bool listCvmMachines();
         bool listRunningCvmMachines();
         bool listMachineDetail(const std::string& machineName);
-        bool createMachine(const std::string& userDataFile, bool startMachine=true, const std::string& parameterMapFile="");
+        bool createMachine(const std::string& userDataFile, bool startMachine, Tools::configMapType& params);
         bool destroyMachine(const std::string& machineName, bool force=false);
         bool pauseMachine(const std::string& machineName);
         bool startMachine(const std::string& machineName);
