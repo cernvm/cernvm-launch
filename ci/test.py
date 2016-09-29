@@ -100,7 +100,7 @@ def ExecuteSection(launchBinary, configParser, section):
         print("\t\tStderr: %s" % stderr)
         success = False
     elif expRegex is not None: # check if the given regex matches
-        pattern = re.compile(expRegex)
+        pattern = re.compile(expRegex, re.DOTALL)
         if pattern.match(stdout) is None: #=> does not match
             print("FAIL\tSection: %s" % section)
             print("\t\tError: Output does not match the expected regex")
