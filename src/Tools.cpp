@@ -60,7 +60,7 @@ bool LoadGlobalConfig(std::map<const std::string, const std::string>& outMap) {
     bool success = Tools::LoadFileIntoMap(filename, outMap);
 
     if (! success) {
-        std::cerr << "Unable to load config file: " << filename << std::endl;
+        std::cerr << "Unable to load global config file: " << filename << std::endl;
         return false;
     }
 
