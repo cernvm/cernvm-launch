@@ -32,7 +32,7 @@ typedef std::map<std::string, HVSessionPtr>             sessionMapType;
 //If no parameters are provided (either via user param file or global config), these are used
 const paramMapType DefaultCreationParams = {
     {"apiPort", "22"},
-    {"cernvmVersion", "2.6.9"},
+    {"cernvmVersion", "latest"},
     {"cpus", "1"},
     {"memory", "2048"},
     {"disk", "20000"},

@@ -180,7 +180,7 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
             continue;
         }
         bool matchedFlag = false;
-        std::map<const std::string, std::string>::iterator it = paramFlags.begin();
+        std::map<std::string, std::string>::iterator it = paramFlags.begin();
         for (; it != paramFlags.end(); ++it) { // go through paramFlags
             if (it->first == std::string(argv[i])) { // matched our paramFlag with argv
                 matchedFlag = true;
