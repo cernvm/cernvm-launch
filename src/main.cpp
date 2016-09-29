@@ -211,6 +211,7 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
         std::cerr << "'create' requires at least a 'user_data_file' argument" << std::endl;
         return ERR_INVALID_PARAM_COUNT;
     }
+    std::cout << "Using user data file: " << userDataFile << std::endl;
 
     Tools::configMapType paramMap;
     if (! paramFile.empty()) {
@@ -221,7 +222,7 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
         }
         std::cout << "Using parameter file: " << paramFile << std::endl;
     }
-    //add parameters from command line (they have preference)
+    //add parameters from command line (they have the highest preference)
     std::map<std::string, std::string>::iterator it = paramFlags.begin();
     for (; it != paramFlags.end(); ++it) {
         if ((it->second).empty())
