@@ -49,7 +49,7 @@ const std::vector<std::string> CreationInfoFields = {
     "executionCap",
     "cernvmVersion",
     "apiPort",
-//    "sharedFolder", //TODO add
+    "sharedFolder",
 };
 
 

@@ -222,7 +222,6 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
         std::cout << "Using parameter file: " << paramFile << std::endl;
     }
     //add parameters from command line (they have preference)
-
     std::map<std::string, std::string>::iterator it = paramFlags.begin();
     for (; it != paramFlags.end(); ++it) {
         if ((it->second).empty())
@@ -232,10 +231,6 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
             paramMap.erase(paramMap.find(key));
         paramMap.insert(std::make_pair(key, it->second));
     }
-
-    //TODO remove
-    for (Tools::configMapType::iterator it = paramMap.begin(); it != paramMap.end(); ++it)
-        std::cout << it->first << ": " << it->second << std::endl;
 
     handler.createMachine(userDataFile, !noStartFlag, paramMap);
 
@@ -249,7 +244,8 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
 void PrintHelp() {
     std::cout << "Usage: cernvm-launch OPTION\n"
               << "OPTIONS:\n"
-              << "\tcreate [--no-start] [--memory NUM] [--disk NUM] [--cpus NUM] USER_DATA_FILE [CONFIGURATION_FILE]\tCreate a machine with specified user data.\n"
+              << "\tcreate [--no-start] [--memory NUM] [--disk NUM] [--cpus NUM] USER_DATA_FILE [CONFIGURATION_FILE]\n"
+              << "\t\tCreate a machine with specified user data.\n"
               << "\tdestroy [--force] MACHINE_NAME\tDestroy an existing machine.\n"
               << "\tlist [--running] [MACHINE_NAME]\tList all existing machines or a detailed info about one.\n"
               << "\tpause MACHINE_NAME\tPause a running machine.\n"
@@ -265,3 +261,4 @@ void PrintVersion() {
 }
 
 } //anonymous namespace
+
