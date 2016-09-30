@@ -128,6 +128,11 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
         else // ./cernvm-launch destroy machine_name
             success = handler.destroyMachine(argv[2], false);
     }
+    else if (action == "ssh") {
+        if (!CheckArgCount(argc, 3, "'ssh' requires one argument: machine name"))
+            return ERR_INVALID_PARAM_COUNT;
+        success = handler.sshIntoMachine(argv[2]);
+    }
     //print help
     else if (action == "-h" || action == "--help" || action == "help") {
         PrintHelp();
@@ -250,6 +255,7 @@ void PrintHelp() {
               << "\tdestroy [--force] MACHINE_NAME\tDestroy an existing machine.\n"
               << "\tlist [--running] [MACHINE_NAME]\tList all existing machines or a detailed info about one.\n"
               << "\tpause MACHINE_NAME\tPause a running machine.\n"
+              << "\tssh MACHINE_NAME\tSSH into an existing machine.\n"
               << "\tstart MACHINE_NAME\tStart an existing machine.\n"
               << "\tstop MACHINE_NAME\tStop a running machine.\n"
               << "\t-v, --version\t\tPrint version.\n"

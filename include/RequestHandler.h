@@ -22,6 +22,7 @@ class RequestHandler {
         bool createMachine(const std::string& userDataFile, bool startMachine, Tools::configMapType& params);
         bool destroyMachine(const std::string& machineName, bool force=false);
         bool pauseMachine(const std::string& machineName);
+        bool sshIntoMachine(const std::string& machineName);
         bool startMachine(const std::string& machineName);
         bool stopMachine(const std::string& machineName);
 };

@@ -8,6 +8,9 @@
 #include <utility>
 #include <map>
 #include <vector>
+#ifndef _WIN32
+#include <unistd.h> // for exec
+#endif
 
 #include <boost/shared_ptr.hpp>
 
@@ -312,6 +315,59 @@ bool RequestHandler::pauseMachine(const std::string& machineName) {
     session->wait(); //wait for the session until it finishes all tasks
 
     return true; //we started the session, we don't have to go through the rest of machines
+}
+
+
+bool RequestHandler::sshIntoMachine(const std::string& machineName) {
+#ifdef _WIN32
+    std::cerr << "SSH into machine is not supported on Windows\n";
+    return false;
+#else // linux or mac
+    HVInstancePtr hv = detectHypervisor();
+    if (!hv) {
+        std::cerr << "Unable to detect hypervisor\n";
+        return false;
+    }
+    hv->loadSessions();
+
+    HVSessionPtr session = hv->sessionByName(machineName);
+    if (!session) {
+        std::cerr << "Unable to find the machine: " << machineName << std::endl;
+        return false; //we didn't match the name
+    }
+
+    //Prompt username
+    std::string username;
+    std::cout << "Username: ";
+    if (!Tools::GetUserInput(username)) {
+        std::cerr << "Username is mandatory, exiting";
+        return false;
+    }
+
+    //Exec should look like this: ssh -p PORT_NUM USER@127.0.0.1
+
+    std::string sshBin = which("ssh"); // goes through PATH env
+    if (sshBin.empty()) {
+        std::cerr << "Unable to locate the SSH binary\n";
+        return false;
+    }
+
+    int port = session->local->getNum<int>("apiPort", 0);
+    if (port == 0) {
+        std::cerr << "No ssh port found for this machine\n";
+        return false;
+    }
+    std::string portString = "-p " + port;
+    std::string fullAddress = username + "@127.0.0.1";
+
+    int res = execl(sshBin.c_str(), sshBin.c_str(),"-p 61775", fullAddress.c_str(), (char*) NULL);
+    if (res == -1) {
+        std::cerr << "Unable to launch ssh\n";
+        return false;
+    }
+
+    return true; // exec replaces this process, so we should never return
+#endif // linux or mac
 }
 
 
