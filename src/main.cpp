@@ -94,8 +94,10 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
             else //the user requested details of a machine
                 success = handler.listMachineDetail(argv[2]);
         }
-        else
+        else if (CheckArgCount(argc, 2, "'list' takes no argument"))
             success = handler.listCvmMachines();
+        else
+            return ERR_INVALID_PARAM_COUNT;
     }
     //create a VM
     else if (action == "create") {

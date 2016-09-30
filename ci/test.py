@@ -13,7 +13,7 @@ except ImportError:
 # ./ci directory (where this script is) + added trailing path separator
 CI_DIR = os.path.dirname(os.path.abspath(__file__)) + os.sep
 # Directory where all the test files are (./ci/tests)
-TEST_DIR = os.path.join(CI_DIR, "tests")
+TEST_DIR = os.path.join(CI_DIR, "tests") + os.sep
 
 
 # Main function, its exit code is also the exit code of the script
@@ -153,10 +153,10 @@ def MacroReplace(cmdList):
     return result
 
 
-# If the 'file:' pattern is present in the string, it gets replaced by the CI_DIR
+# If the 'file:' pattern is present in the string, it gets replaced by the TEST_DIR
 def PathExpansion(string):
     if "file:" in string:
-        return string.replace("file:", CI_DIR)
+        return string.replace("file:", TEST_DIR)
     return string
 
 
