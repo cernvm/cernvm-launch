@@ -238,10 +238,9 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
 
     //we need to start the session, so the creation process gets initiated
     ParameterMapPtr emptyMap = ParameterMap::instance(); //we don't want to specify additional parameters
-    session->start(emptyMap);
+    session->start(emptyMap); //start scheduled
     session->wait(); //wait for the session until it finishes all tasks
 
-    //TODO check start return value?  ^
     std::cout << "Parameters used for the machine creation:\n";
     Tools::PrintParameters(CreationInfoFields, session->parameters);
 

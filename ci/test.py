@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.6
 
-import os, sys, subprocess, re, time
+import os, sys, subprocess, re, time, shutil
 import ConfigParser
 try:
     # try with the standard library (Python2.7 and newer)
@@ -17,7 +17,12 @@ TEST_DIR = os.path.join(CI_DIR, "tests") + os.sep
 
 
 # Main function, its exit code is also the exit code of the script
+# This script accepts one optional parameter:
+#       directory, where the binary is copied (under bin/${OS_TYPE}) if the tests are successful
 def Main():
+    binDestinationDir = None
+    if len(sys.argv) > 1:
+        binDestinationDir = sys.argv[1]
     # Try to locate a CernVM-Launch binary
     launchBinary = FindExecutable()
     if not launchBinary:
@@ -50,12 +55,38 @@ def Main():
     print(100*"=")
     if mainEc == 0:
         print("All tests successful")
+        CopyFileToBinDir(launchBinary, binDestinationDir)
     else:
         print("FAILED tests [%d/%d], i.e. %d%%:" % (mainEc, testFilesCount, 100*mainEc/testFilesCount))
         for file in failedTests:
             print("\t%s" % file[:-4]) # strip the '.ini'
 
     return mainEc
+
+
+#Copy given file to the bin/${OS_TYPE} directory
+#If no binDestinationDir is specified, the ./ci dir is used
+def CopyFileToBinDir(filePath, binDestinationDir=None):
+    osType = "Unknown"
+    if RunningOnWin():
+        osType = "Win"
+    elif RunningOnLinux():
+        osType = "Linux"
+    elif RunningOnMac():
+        osType = "Mac"
+
+    baseDir = CI_DIR
+    if binDestinationDir:
+        baseDir = binDestinationDir
+    binDir = os.path.join(baseDir, 'bin', osType)
+
+    if not os.path.exists(binDir):
+        os.makedirs(binDir)
+    try:
+        shutil.copy(filePath, binDir)
+    except shutil.Error: # ignore complain if the files are the same
+        pass
+    print("File %s copied to the bin directory: %s" % (filePath, binDir))
 
 
 # Run all sections in the given test files and return whether it was successful or not
@@ -173,6 +204,16 @@ def RunCmd(cmdList):
 # True if running on a Windows machine
 def RunningOnWin():
     return sys.platform.startswith("win")
+
+
+# True if running on a Mac OS machine
+def RunningOnMac():
+    return sys.platform.startswith("darwin") or os.name == "mac"
+
+
+# True if running on a Linux machine
+def RunningOnLinux():
+    return sys.platform.startswith("linux")
 
 
 # Main function wrapper
