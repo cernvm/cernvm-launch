@@ -33,8 +33,9 @@ This job depends on a previous successful execution of the CernVM-Launch job, wh
 ### Test file format
 
 Test file can have several sections, which are executed in the same order as they occur.
-A section represents one run of the cernvm-launch binary. A test is successful if all its
-sections run successfully.
+Section represents one run of the cernvm-launch binary. Test is successful if all its
+sections run successfully. Test must not leave any artifacts after its execution (e.g.
+created machines).
 
 Section has following parameters:
 - cmd_params: cernvm-launch command line arguments. You can provide a 
