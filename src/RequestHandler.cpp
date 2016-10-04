@@ -151,7 +151,11 @@ bool RequestHandler::listMachineDetail(const std::string& machineName) {
 
     const std::vector<std::string> parametersFields = {
         "cpus",
-        "memory"
+        "memory",
+        "disk",
+        "executionCap",
+        "cernvmVersion",
+        "apiPort",
     };
 
     const std::vector<std::string> localFields = {

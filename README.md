@@ -11,17 +11,23 @@ Requirements
 Usage
 =====
 
-CernVM-Launch supports the following operations.
+CernVM-Launch provides following operations.
 
 
 Create a virtual machine
 ------------------------
 
-	create [--name MACHINE_NAME] [--no-start] [--memory NUM] [--disk NUM] [--cpus NUM] USER_DATA_FILE [CONFIGURATION_FILE]
+	create [--no-start] [--name MACHINE_NAME] [--memory NUM] [--disk NUM] [--cpus NUM] USER_DATA_FILE [CONFIGURATION_FILE]
 		
-Create a machine with specified user (contextualization) data. By default, the machine is started right away (specify '\-\-no-start' to suppress that).
+Create a machine with specified user (contextualization) data.
+By default, the machine is started right away (use '\-\-no-start' to suppress that).
 
-When creating a machine, you may specify the parameters in several ways: via command line arguments, via CONFIGURATION FILE or via global CernVM-Launch config file. Parameters are considered in the following precedence: 
+When creating a machine, you may specify the parameters in several ways via:
+- command line arguments,
+- configuration file,
+- global CernVM-Launch config file.
+
+Parameters are considered in the following precedence:
 
 Command line parameters > configuration file > global config > hardcoded defaults.
 
@@ -86,6 +92,16 @@ List existing virtual machines
 List all existing machines or a detailed info about given machine.
 If '\-\-running' is specified, only running machines are listed.
 If MACHINE_NAME is specified, detailed information about a machine is displayed.
+
+Machine details contain the following fields:
+- cpus: how many assigned CPUs the machine has
+- memory: how much memory (in MB)
+- disk: how big the disk is (in kB)
+- executionCap: hypervisor's execution capability
+- cernvmVersion: used CernVM version
+- apiPort: VM's port connected to the host OS
+- baseFolder: where all the VM files are stored
+- rdpPort: RDP port for accessing the machine
 	
 Pause a virtual machine
 -----------------------
@@ -99,7 +115,7 @@ SSH into a machine
 
 	ssh MACHINE_NAME
 	
-SSH into an existing machine. It is not supported on Windows.
+SSH into an existing machine. Not supported on Windows.
 	
 Start a virtual machine
 -----------------------
