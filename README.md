@@ -20,7 +20,7 @@ Create a virtual machine
 	create [--no-start] [--name MACHINE_NAME] [--memory NUM] [--disk NUM] [--cpus NUM] USER_DATA_FILE [CONFIGURATION_FILE]
 		
 Create a machine with specified user (contextualization) data.
-By default, the machine is started right away (use '\-\-no-start' to suppress that).
+By default, the machine is started right away (use `--no-start` to suppress that).
 
 When creating a machine, you may specify the parameters in several ways via:
 - command line arguments,
@@ -63,7 +63,7 @@ If a user does not provide all of the parameters (neither through one of the thr
 
 
 ### Flags parameter
-There is one special parameter called 'flags', which uses a bit format for configuring several VM options.
+There is one special parameter called `flags`, which uses a bit format for configuring several VM options.
 
     Active bit   Effect
       1          The system is 64-bit instead of 32-bit
@@ -82,7 +82,7 @@ Destroy an existing VM
 
 	destroy [--force] MACHINE_NAME
 	
-Destroy an existing VM. By default, a running machine is not destroyed: you have to use '\-\-force' flag to do that.
+Destroy an existing VM. By default, a running machine is not destroyed: you have to use `--force` flag to do that.
 	
 List existing virtual machines
 ------------------------------
@@ -90,7 +90,7 @@ List existing virtual machines
 	list [--running] [MACHINE_NAME]
 	
 List all existing machines or a detailed info about given machine.
-If '\-\-running' is specified, only running machines are listed.
+If `--running` is specified, only running machines are listed.
 If MACHINE_NAME is specified, detailed information about a machine is displayed.
 
 Machine details contain the following fields:
@@ -141,7 +141,7 @@ In CernVM-Launch, you have two types of configs. A global CernVM-Launch config, 
 Global config file
 ------------------
 
-Global config file has to be named '.cernvm-launch.conf' and placed in the user home directory, i.e.:
+Global config file has to be named `.cernvm-launch.conf` and placed in the user home directory, i.e.:
 
 On Linux:
 
