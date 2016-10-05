@@ -20,16 +20,18 @@ namespace Tools {
 //Global config map singleton object
 configMapType GlobalConfigMap;
 
-// systemPath changes the slashes to correct ones
+//systemPath changes the slashes to correct ones
 const std::string GLOBAL_CONFIG_FILENAME = systemPath(getHomeDir() + "/.cernvm-launch.conf");
 
-const std::string defaultConfigFileStr = \
+//You need to stitch these two part together, with shared folder in the middle (we prompt the user for it)
+const std::string defaultConfigFileStrPartOne = \
 "########### CernVM-Launch configuration ###########\n"
 "# Folder on the host OS which will be shared to VMs\n"
 "sharedFolder=" + getHomeDir() + "\n"
 "# Folder on the host OS where all VMs configuration files and images are stored (can get large)\n"
 "# Changing this folder will disconnect already existing machines from CernVM-Launch\n"
-"launchHomeFolder=" + getAppDataPath() + "\n"
+"launchHomeFolder=";
+const std::string defaultConfigFileStrPartTwo = \
 "########### Default VM parameters ###########\n"
 "# VM's port connected to the host OS. Use 22 to have SSH access to the machine\n"
 "apiPort=22\n"
@@ -59,7 +61,14 @@ bool CreateDefaultGlobalConfig() {
 
     std::cout << "Creating a new global config: " << GLOBAL_CONFIG_FILENAME << std::endl;
 
-    ofs << defaultConfigFileStr; //ofs is closed on object destroy
+    std::cout << "Enter a directory where do you want keep all CernVM-Launch files: VM images, disk files, etc. "
+              << "These files can grow substantially.\n"
+              << "Enter directory [" << getDefaultAppDataBaseDir() << "]: ";
+    std::string launchDir;
+    if (!GetUserInput(launchDir))
+        launchDir = getDefaultAppDataBaseDir();
+
+    ofs << defaultConfigFileStrPartOne << launchDir << "\n" << defaultConfigFileStrPartTwo; //ofs is closed on object destroy
 }
 
 
