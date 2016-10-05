@@ -23,7 +23,7 @@ configMapType GlobalConfigMap;
 //systemPath changes the slashes to correct ones
 const std::string GLOBAL_CONFIG_FILENAME = systemPath(getHomeDir() + "/.cernvm-launch.conf");
 
-//You need to stitch these two part together, with shared folder in the middle (we prompt the user for it)
+//You need to stitch these two part together, with home folder in the middle (we prompt the user for it)
 const std::string defaultConfigFileStrPartOne = \
 "########### CernVM-Launch configuration ###########\n"
 "# Folder on the host OS which will be shared to VMs\n"

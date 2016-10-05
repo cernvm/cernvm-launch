@@ -13,6 +13,7 @@
 #endif
 
 #include <boost/shared_ptr.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <CernVM/Hypervisor.h>
 #include <CernVM/ParameterMap.h>
@@ -123,6 +124,33 @@ bool RequestHandler::listRunningCvmMachines() {
     }
 
     return true;
+}
+
+
+bool RequestHandler::isMachineRunning(const std::string& machineName) {
+    HVInstancePtr hv = detectHypervisor();
+    if (!hv) {
+        std::cerr << "Unable to detect hypervisor\n";
+        return false;
+    }
+
+    //load previously stored sessions
+    hv->loadSessions();
+
+    sessionMapType sessions = hv->sessions;
+    if (sessions.size() == 0) //we have no our sessions
+        return false;
+
+    std::vector<std::string> runningVms = hv->getRunningMachines();
+    for(sessionMapType::iterator it=sessions.begin(); it != sessions.end(); ++it) {
+        HVSessionPtr session = it->second;
+
+        std::string name = session->parameters->get("name", "");
+        if (name == machineName)
+            return true;
+    }
+
+    return false; //we didn't match it
 }
 
 
@@ -276,24 +304,27 @@ bool RequestHandler::destroyMachine(const std::string& machineName, bool force) 
         return false;
     }
 
+    if (this->isMachineRunning(machineName)) {
+        if (!force) { //prompt user for confirmation
+            std::cout << "The machine '" << machineName << "' is running, do you want do destroy it? [y/N]: ";
+            std::string decision;
+            bool gotInput = Tools::GetUserInput(decision);
+            boost::algorithm::to_lower(decision);
+
+            if (!gotInput || (decision != "y" && decision != "yes")) { //just <Enter> or something else than yes
+                return true; //user does not want to destroy it
+            }
+        }
+        vboxSession->stop();
+        vboxSession->wait();
+    }
+
     int ret = vboxSession->destroyVM();
     vboxSession->wait();
 
     if (ret != HVE_OK) {
-        if (force) { //machine is probably running, stop it and try again
-            vboxSession->stop();
-            vboxSession->wait();
-            ret = vboxSession->destroyVM();
-            vboxSession->wait();
-            if (ret != HVE_OK) {
-                std::cerr << "Unable to delete the machine.\n";
-                return false;
-            }
-        }
-        else {
-            std::cerr << "Unable to delete the machine, probably it's running. Use '--force' to delete anyway.\n";
-            return false;
-        }
+        std::cerr << "Unable to delete the machine.\n";
+        return false;
     }
     hv->sessionDelete(session);
 

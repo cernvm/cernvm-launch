@@ -16,6 +16,8 @@ namespace Launch {
 //All of the methods return true on success, false otherwise.
 class RequestHandler {
     public:
+        //Check if a given machine is running
+        bool isMachineRunning(const std::string& machineName);
         //List existing CernVM machines
         bool listCvmMachines();
         //List only running CernVM machines
