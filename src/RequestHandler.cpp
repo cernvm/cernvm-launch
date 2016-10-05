@@ -146,7 +146,11 @@ bool RequestHandler::isMachineRunning(const std::string& machineName) {
         HVSessionPtr session = it->second;
 
         std::string name = session->parameters->get("name", "");
-        if (name == machineName)
+        if (machineName != name)
+            continue;
+
+        //we got our machine
+        if (std::find(runningVms.begin(), runningVms.end(), name) != runningVms.end())
             return true;
     }
 
@@ -172,10 +176,9 @@ bool RequestHandler::listMachineDetail(const std::string& machineName) {
     //get header information
     std::string name = session->parameters->get("name", "");
     std::string cvmVersion = session->parameters->get("cernvmVersion", "");
-    std::string apiPort = session->local->get("apiPort", "");
 
     if (!name.empty() && !cvmVersion.empty()) //we've got a CVM machine
-        std::cout << name << ":\tCVM: " << cvmVersion << "\tport: " << apiPort << std::endl;
+        std::cout << name << ":\tCVM: " << cvmVersion << std::endl;
 
     const std::vector<std::string> parametersFields = {
         "cpus",
@@ -183,7 +186,6 @@ bool RequestHandler::listMachineDetail(const std::string& machineName) {
         "disk",
         "executionCap",
         "cernvmVersion",
-        "apiPort",
     };
 
     const std::vector<std::string> localFields = {
@@ -193,7 +195,11 @@ bool RequestHandler::listMachineDetail(const std::string& machineName) {
 
     Tools::PrintParameters(parametersFields, session->parameters);
     Tools::PrintParameters(localFields, session->local);
-    //PrintParameters(machineFields, session->machine);
+
+    //now print the forwarding part
+    std::string localApiPort = session->local->get("apiPort", "");
+    std::string paramApiPort = session->parameters->get("apiPort", "");
+    std::cout << "\tforwarded ports: " << paramApiPort << " (VM) --> " << localApiPort << " (localhost)" << std::endl;
 
     return true;
 }
@@ -370,6 +376,11 @@ bool RequestHandler::sshIntoMachine(const std::string& machineName) {
         return false; //we didn't match the name
     }
 
+    if (! this->isMachineRunning(machineName)) {
+        std::cerr << "Machine '" << machineName << "' is not running\n";
+        return false;
+    }
+
     //Prompt username
     std::string username;
     std::cout << "Username: ";
@@ -386,15 +397,16 @@ bool RequestHandler::sshIntoMachine(const std::string& machineName) {
         return false;
     }
 
-    int port = session->local->getNum<int>("apiPort", 0);
-    if (port == 0) {
+    std::string port = session->local->get("apiPort", "");
+    if (port.empty()) {
         std::cerr << "No ssh port found for this machine\n";
         return false;
     }
     std::string portString = "-p " + port;
     std::string fullAddress = username + "@127.0.0.1";
 
-    int res = execl(sshBin.c_str(), sshBin.c_str(),"-p 61775", fullAddress.c_str(), (char*) NULL);
+
+    int res = execl(sshBin.c_str(), sshBin.c_str(), portString.c_str(), fullAddress.c_str(), (char*) NULL);
     if (res == -1) {
         std::cerr << "Unable to launch ssh\n";
         return false;

@@ -16,7 +16,6 @@
 namespace Launch {
 namespace Tools {
 
-
 //Global config map singleton object
 configMapType GlobalConfigMap;
 

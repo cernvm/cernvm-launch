@@ -82,7 +82,8 @@ Destroy an existing VM
 
 	destroy [--force] MACHINE_NAME
 	
-Destroy an existing VM. By default, a running machine is not destroyed: you have to use `--force` flag to do that.
+Destroy an existing VM. If the machine is running, the user is prompted with confirmation.
+If want to avoid the prompting, use `--force` flag.
 	
 List existing virtual machines
 ------------------------------
