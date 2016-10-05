@@ -57,7 +57,7 @@ const std::vector<std::string> CreationInfoFields = {
 };
 
 
-bool         CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& missingParameter);
+std::string  PromptForMachineName(const std::string& defaultValue);
 HVSessionPtr FindSessionByName(const std::string& machineName, HVInstancePtr& hypervisor, bool loadSessions=false);
 
 } //anonymous namespace
@@ -246,13 +246,19 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
     hv->loadSessions();
     sessionMapType sessions = hv->sessions;
 
-    std::string missingParameter;
-    if (!CheckMandatoryParameters(parameters, missingParameter)) {
-        std::cerr << "Cannot create a virtual machine, missing parameter: " << missingParameter << std::endl;
-        return false;
-    }
+    parameters->set("secret", "defaultSecret"); //this is needed by libcernvm
 
-    std::string machineName = parameters->get("name");
+    std::string machineName = parameters->get("name", "");
+
+    //VM name missing, prompt the user
+    if (machineName.empty()) {
+        std::string defaultMachineName = getFilename(userDataFile); //get the basename
+        if (defaultMachineName.find('.') != std::string::npos) //strip extension if needed
+            defaultMachineName = defaultMachineName.substr(0, defaultMachineName.find('.'));
+
+        machineName = PromptForMachineName(defaultMachineName);
+        parameters->set("name", machineName);
+    }
 
     if (FindSessionByName(machineName, hv)) { //we already have this session
         std::cerr << "The machine already exists\n";
@@ -463,32 +469,14 @@ bool RequestHandler::stopMachine(const std::string& machineName) {
 namespace {
 
 
-//Check mandatory parameters for a VM creation.
-//If any is missing, we ask user for it
-//If the 'secret' param is not present, we add
-//a default one (it's required for the sessionOpen)
-//Return false if any is missing.
-bool CheckMandatoryParameters(const ParameterMapPtr& parameters, std::string& missingParameter) {
-    std::vector<std::string> mandatoryParams = {
-        "name",
-    };
+//Prompt for username. if none is provided, use given default
+std::string PromptForMachineName(const std::string& defaultValue) {
+    std::cout << "Enter name [" << defaultValue << "]: ";
+    std::string userValue;
+    if (! Tools::GetUserInput(userValue)) //no input
+        return defaultValue;
 
-    for (std::vector<std::string>::iterator it = mandatoryParams.begin(); it != mandatoryParams.end(); ++it) {
-        if (parameters->get(*it, "").empty()) {
-            missingParameter = *it;
-            //Ask user and store the value
-            std::string userValue;
-            std::cout << "Enter '" << *it << "': ";
-            if (! Tools::GetUserInput(userValue))
-                return false;
-            parameters->set(*it, userValue);
-        }
-    }
-
-    if (parameters->get("secret", "").empty())
-        parameters->set("secret", "defaultSecret");
-
-    return true;
+    return userValue;
 }
 
 
