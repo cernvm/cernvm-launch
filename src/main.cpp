@@ -52,6 +52,10 @@ int main(int argc, char** argv) {
                 std::cerr << "Unable to set launchHomeFolder to: " << configMap->at("launchHomeFolder") << std::endl;
         }
     }
+    else {
+        std::cerr << "Unable to create/load the global config file\n";
+        return ERR_RUNTIME_ERROR;
+    }
 
     Launch::RequestHandler handler;
 

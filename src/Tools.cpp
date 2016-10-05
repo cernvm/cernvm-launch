@@ -20,6 +20,27 @@ namespace Tools {
 //Global config map singleton object
 configMapType GlobalConfigMap;
 
+// systemPath changes the slashes to correct ones
+const std::string GLOBAL_CONFIG_FILENAME = systemPath(getHomeDir() + "/.cernvm-launch.conf");
+
+const std::string defaultConfigFileStr = \
+"########### CernVM-Launch configuration ###########\n"
+"# Folder on the host OS which will be shared to VMs\n"
+"sharedFolder=" + getHomeDir() + "\n"
+"# Folder on the host OS where all VMs configuration files and images are stored (can get large)\n"
+"# Changing this folder will disconnect already existing machines from CernVM-Launch\n"
+"launchHomeFolder=" + getAppDataPath() + "\n"
+"########### Default VM parameters ###########\n"
+"# VM's port connected to the host OS. Use 22 to have SSH access to the machine\n"
+"apiPort=22\n"
+"cernvmVersion=latest\n"
+"cpus=1\n"
+"memory=2048\n"
+"disk=20000\n"
+"executionCap=100\n"
+"# Flags: 64bit, headful mode, graphical extensions\n"
+"flags=49\n";
+
 
 //Add non-existent items from sourceMap to outMap
 void AddMissingValuesToMap(configMapType& outMap, const configMapType& sourceMap) {
@@ -30,10 +51,30 @@ void AddMissingValuesToMap(configMapType& outMap, const configMapType& sourceMap
     }
 }
 
+
+bool CreateDefaultGlobalConfig() {
+    std::ofstream ofs (GLOBAL_CONFIG_FILENAME);
+    if (!ofs.good()) //error when opening the file
+        return false;
+
+    std::cout << "Creating a new global config: " << GLOBAL_CONFIG_FILENAME << std::endl;
+
+    ofs << defaultConfigFileStr; //ofs is closed on object destroy
+}
+
+
 //Get a pointer to the global config object, load if necessary
 configMapTypePtr GetGlobalConfig() {
     if (GlobalConfigMap.empty()) {
-        if (!LoadGlobalConfig(GlobalConfigMap)) //unable to load the config
+        bool configLoaded = LoadGlobalConfig(GlobalConfigMap);
+        if (!configLoaded) { //unable to load the config, create a default one
+            if (!CreateDefaultGlobalConfig()) { //unable to write a global config file
+                return NULL;
+            }
+            GlobalConfigMap.clear();
+        }
+        configLoaded = LoadGlobalConfig(GlobalConfigMap);
+        if (!configLoaded) //unable to load the newly created config
             return NULL;
     }
     return &GlobalConfigMap;
@@ -42,7 +83,6 @@ configMapTypePtr GetGlobalConfig() {
 
 //Get input from user (stdin) and trim it
 bool GetUserInput(std::string& outValue) {
-
     std::getline(std::cin, outValue);
     boost::trim(outValue);
     if (outValue.empty())
@@ -54,13 +94,10 @@ bool GetUserInput(std::string& outValue) {
 
 //Load global config file (with default VM parameters and Launch configuration)
 bool LoadGlobalConfig(std::map<const std::string, const std::string>& outMap) {
-    // systemPath changes the slashes to correct ones
-    std::string filename = systemPath(getHomeDir() + "/.cernvm-launch.conf");
-
-    bool success = Tools::LoadFileIntoMap(filename, outMap);
+    bool success = Tools::LoadFileIntoMap(GLOBAL_CONFIG_FILENAME, outMap);
 
     if (! success) {
-        std::cout << "Unable to load global config file: " << filename << std::endl;
+        std::cout << "Unable to load global config file: " << GLOBAL_CONFIG_FILENAME << std::endl;
         return false;
     }
 
@@ -76,7 +113,6 @@ bool LoadGlobalConfig(std::map<const std::string, const std::string>& outMap) {
 //We do not store items with an empty value.
 bool LoadFileIntoMap(const std::string& filename, std::map<const std::string, const std::string>& outMap) {
     std::ifstream ifs (filename);
-
     if (!ifs.good()) //error when opening a file
         return false;
 
