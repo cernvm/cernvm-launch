@@ -260,6 +260,11 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
         parameters->set("name", machineName);
     }
 
+    if (! isSanitized(&machineName, SAFE_ALNUM_CHARS)) {
+        std::cerr << "Machine name contains illegal characters, use only following: " << SAFE_ALNUM_CHARS << std::endl;
+        return false;
+    }
+
     if (FindSessionByName(machineName, hv)) { //we already have this session
         std::cerr << "The machine already exists\n";
         return false;
@@ -274,7 +279,6 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
 
     //get our newly allocated session and open it (i.e. start the FSM => initiate the creation)
     session = FindSessionByName(machineName, hv);
-
     if (!session) {
         std::cerr << "Could not open the session\n";
         return false;
@@ -500,6 +504,8 @@ HVSessionPtr FindSessionByName(const std::string& machineName, HVInstancePtr& hy
 
     //open the session, i.e. start the FSM thread
     session = hypervisor->sessionOpen(sessParamMap, pOpen, false); //bypass verification, we're locals
+    if (!session)
+        return NULL;
     session->wait();
 
     return session;

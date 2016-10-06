@@ -116,7 +116,7 @@ SSH into a machine
 
 	ssh MACHINE_NAME
 	
-SSH into an existing machine. Not supported on Windows.
+SSH into an existing machine. You must have ssh installed and available in your PATH. Not supported on Windows.
 	
 Start a virtual machine
 -----------------------
@@ -156,7 +156,7 @@ Config file example with all recognized items:
     ########### CernVM-Launch configuration ###########
     # Folder on the host OS which will be shared to VMs
     sharedFolder=
-    # Folder on the host OS where all VMs configuration files and images are stored (can get large)
+    # Folder on the host OS where all VM configuration files and images are stored (can get large)
     # Changing this folder will disconnect already existing machines from CernVM-Launch
     launchHomeFolder=
     ########### Default VM parameters ###########
