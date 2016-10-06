@@ -95,16 +95,18 @@ def RunTest(launchBinary, testFile):
     config = ConfigParser.ConfigParser(dict_type=OrderedDict) # specify dict_type to keep the order of sections
     config.read(os.path.join(TEST_DIR, testFile))
 
+    good = True
     sections = config.sections()
     for section in sections:
         suc = ExecuteSection(launchBinary, config, section)
-        if not suc: # stop executing when one section fails
-            return False
+        if not suc:
+            good = False
         if section != sections[-1]: # don't sleep after the last section
             time.sleep(5)
 
-    print("\tOK")
-    return True
+    if good:
+        print("\tOK")
+    return good
 
 
 # Executes given section from the given config
