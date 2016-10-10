@@ -57,6 +57,8 @@ const std::vector<std::string> CreationInfoFields = {
 };
 
 
+//Check if the params have all the required params, print error message and return false if not
+bool CheckCreationParameters(ParameterMapPtr params);
 std::string  PromptForMachineName(const std::string& defaultValue);
 HVSessionPtr FindSessionByName(const std::string& machineName, HVInstancePtr& hypervisor, bool loadSessions=false);
 
@@ -241,6 +243,9 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
     //create a parameter map from std::map
     ParameterMapPtr parameters = ParameterMap::instance();
     parameters->fromMap(&paramMap);
+
+    if (!CheckCreationParameters(parameters))
+        return false; // user forgot to specify some parameters
 
     //The same machine can already have a session, check it
     hv->loadSessions();
@@ -471,6 +476,29 @@ bool RequestHandler::stopMachine(const std::string& machineName) {
 // Local helper functions
 //-----------------------------------------------------------------------------
 namespace {
+
+bool CheckCreationParameters(ParameterMapPtr params) {
+    //check flags
+    int flags = params->getNum<int>("flags", 0);
+    if (flags) {
+        if (flags & HVF_DEPLOYMENT_HDD_LOCAL) {
+            //we need diskPath
+            if ((params->get("diskPath", "")).empty()) {
+                std::cerr << "You need to provide 'diskPath' parameter for deployment from a local file\n";
+                return false;
+            }
+        }
+        else if (flags & HVF_DEPLOYMENT_HDD) {
+            //we need diskURL and diskChecksum
+            if ((params->get("diskURL", "")).empty() || (params->get("diskChecksum", "")).empty()) {
+                std::cerr << "You need to provide 'diskURL' and 'diskChecksum' parameters for online deployment\n";
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
 
 
 //Prompt for username. if none is provided, use given default

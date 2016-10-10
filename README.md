@@ -74,6 +74,7 @@ There is one special parameter called `flags`, which uses a bit format for confi
      32          Enable graphical extension (like drag-n-drop)
      64          Use secondary adapter instead of creating a NAT rule on the first one
     128          Use ttyS0 as external logfile.
+    256          Use bootable VDI file as the main image.
 
 
 
