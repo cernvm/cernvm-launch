@@ -57,6 +57,8 @@ const std::vector<std::string> CreationInfoFields = {
 };
 
 
+//Check if the params have all the required params, print error message and return false if not
+bool CheckCreationParameters(ParameterMapPtr params);
 std::string  PromptForMachineName(const std::string& defaultValue);
 HVSessionPtr FindSessionByName(const std::string& machineName, HVInstancePtr& hypervisor, bool loadSessions=false);
 
@@ -242,6 +244,9 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
     ParameterMapPtr parameters = ParameterMap::instance();
     parameters->fromMap(&paramMap);
 
+    if (!CheckCreationParameters(parameters))
+        return false; // user forgot to specify some parameters
+
     //The same machine can already have a session, check it
     hv->loadSessions();
     sessionMapType sessions = hv->sessions;
@@ -260,6 +265,11 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
         parameters->set("name", machineName);
     }
 
+    if (! isSanitized(&machineName, SAFE_ALNUM_CHARS)) {
+        std::cerr << "Machine name contains illegal characters, use only following: " << SAFE_ALNUM_CHARS << std::endl;
+        return false;
+    }
+
     if (FindSessionByName(machineName, hv)) { //we already have this session
         std::cerr << "The machine already exists\n";
         return false;
@@ -274,7 +284,6 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
 
     //get our newly allocated session and open it (i.e. start the FSM => initiate the creation)
     session = FindSessionByName(machineName, hv);
-
     if (!session) {
         std::cerr << "Could not open the session\n";
         return false;
@@ -468,6 +477,29 @@ bool RequestHandler::stopMachine(const std::string& machineName) {
 //-----------------------------------------------------------------------------
 namespace {
 
+bool CheckCreationParameters(ParameterMapPtr params) {
+    //check flags
+    int flags = params->getNum<int>("flags", 0);
+    if (flags) {
+        if (flags & HVF_DEPLOYMENT_HDD_LOCAL) {
+            //we need diskPath
+            if ((params->get("diskPath", "")).empty()) {
+                std::cerr << "You need to provide 'diskPath' parameter for deployment from a local file\n";
+                return false;
+            }
+        }
+        else if (flags & HVF_DEPLOYMENT_HDD) {
+            //we need diskURL and diskChecksum
+            if ((params->get("diskURL", "")).empty() || (params->get("diskChecksum", "")).empty()) {
+                std::cerr << "You need to provide 'diskURL' and 'diskChecksum' parameters for online deployment\n";
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 
 //Prompt for username. if none is provided, use given default
 std::string PromptForMachineName(const std::string& defaultValue) {
@@ -500,6 +532,8 @@ HVSessionPtr FindSessionByName(const std::string& machineName, HVInstancePtr& hy
 
     //open the session, i.e. start the FSM thread
     session = hypervisor->sessionOpen(sessParamMap, pOpen, false); //bypass verification, we're locals
+    if (!session)
+        return NULL;
     session->wait();
 
     return session;

@@ -27,7 +27,7 @@ const std::string defaultConfigFileStrPartOne = \
 "########### CernVM-Launch configuration ###########\n"
 "# Folder on the host OS which will be shared to VMs\n"
 "sharedFolder=" + getHomeDir() + "\n"
-"# Folder on the host OS where all VMs configuration files and images are stored (can get large)\n"
+"# Folder on the host OS where all VM configuration files and images are stored (can get large)\n"
 "# Changing this folder will disconnect already existing machines from CernVM-Launch\n"
 "launchHomeFolder=";
 const std::string defaultConfigFileStrPartTwo = \

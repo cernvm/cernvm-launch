@@ -25,11 +25,14 @@ namespace {
 const std::string VERSION = "0.9.0";
 
 //Module local functions
-bool             CheckArgCount(int argc, int desiredCount, const std::string& errorMessageOnFail);
-int              DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler);
-int              DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler);
-void             PrintHelp();
-void             PrintVersion();
+bool CheckArgCount(int argc, int desiredCount, const std::string& errorMessageOnFail);
+//Check if we should print help or not, before processing anything
+//(for avoiding prompting user for configuration too early
+int  CheckPrintHelp(int argc, char**argv);
+int  DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler);
+int  DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler);
+void PrintHelp();
+void PrintVersion();
 
 //list of error codes returned by the program
 const int ERR_OK = 0; //success
@@ -43,6 +46,10 @@ const int ERR_RUNTIME_ERROR = 4;
 
 
 int main(int argc, char** argv) {
+    int exitCode = 0;
+    if ((exitCode = CheckPrintHelp(argc, argv)) != ERR_OK)
+        return exitCode;
+
     Tools::configMapTypePtr configMap = Tools::GetGlobalConfig();
     if (configMap) {
         if (configMap->find("launchHomeFolder") != configMap->end()) {
@@ -59,7 +66,7 @@ int main(int argc, char** argv) {
 
     Launch::RequestHandler handler;
 
-    int exitCode = DispatchArguments(argc, argv, handler);
+    exitCode = DispatchArguments(argc, argv, handler);
 
     return exitCode;
 }
@@ -76,6 +83,23 @@ bool CheckArgCount(int argc, int desiredCount, const std::string& errorMessageOn
         return false;
     }
     return true;
+}
+
+
+//Check if we should print help or not, before processing anything
+//(for avoiding prompting user for configuration too early
+int CheckPrintHelp(int argc, char** argv) {
+    if (argc <= 1) {
+        PrintHelp();
+        return ERR_INVALID_PARAM_COUNT;
+    }
+    std::string action = argv[1];
+    //print help
+    if (action == "-h" || action == "--help" || action == "help") {
+        PrintHelp();
+        return ERR_INVALID_PARAM_COUNT;
+    }
+    return ERR_OK;
 }
 
 
