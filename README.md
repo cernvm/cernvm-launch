@@ -17,7 +17,8 @@ CernVM-Launch provides following operations.
 Create a virtual machine
 ------------------------
 
-	create [--no-start] [--name MACHINE_NAME] [--memory NUM] [--disk NUM] [--cpus NUM] USER_DATA_FILE [CONFIGURATION_FILE]
+	create [--no-start] [--name MACHINE_NAME] [--memory NUM] [--disk NUM]
+           [--cpus NUM] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]
 		
 Create a machine with specified user (contextualization) data.
 By default, the machine is started right away (use `--no-start` to suppress that).

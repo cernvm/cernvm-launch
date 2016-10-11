@@ -22,7 +22,7 @@ using namespace Launch;
 namespace {
 
 //CernVM-Launch version
-const std::string VERSION = "0.9.0";
+const std::string VERSION = "0.9.1";
 
 //Module local functions
 bool CheckArgCount(int argc, int desiredCount, const std::string& errorMessageOnFail);
@@ -197,6 +197,7 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
         {"--cpus", ""},
         {"--disk", ""},
         {"--name", ""},
+        {"--sharedFolder", ""},
     };
     bool noStartFlag = false;
     std::string userDataFile;
@@ -239,7 +240,7 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
         }
     }
     //handler.createMachine(useData, boolStartOpt, paramFileOpt)
-    //Generic format: ./cernvm-launch create [--no-start] [--memory NUM] [--disk NUM] [--cpus NUM] userData_file [config_file]
+    //Generic format: ./cernvm-launch create [--no-start] [--memory NUM] [--disk NUM] [--cpus NUM] [--sharedFolder PATH] userData_file [config_file]
     bool success = false;
 
     if (userDataFile.empty()) {
@@ -280,7 +281,8 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
 void PrintHelp() {
     std::cout << "Usage: cernvm-launch OPTION\n"
               << "OPTIONS:\n"
-              << "\tcreate [--no-start] [--name MACHINE_NAME] [--memory NUM] [--disk NUM] [--cpus NUM] USER_DATA_FILE [CONFIGURATION_FILE]\n"
+              << "\tcreate [--no-start] [--name MACHINE_NAME] [--memory NUM] [--disk NUM]\n"
+              << "\t       [--cpus NUM] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]\n"
               << "\t\tCreate a machine with specified user data.\n"
               << "\tdestroy [--force] MACHINE_NAME\tDestroy an existing machine.\n"
               << "\tlist [--running] [MACHINE_NAME]\tList all existing machines or a detailed info about one.\n"
