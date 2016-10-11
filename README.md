@@ -44,6 +44,7 @@ Creation parameters file example with all recognized items:
     disk=10000
     diskChecksum=
     diskURL=
+    diskPath=
     executionCap=100
     #Flags: 64bit, guest additions, (headless mode)
     flags=5
@@ -63,19 +64,22 @@ If a user does not provide all of the parameters (neither through one of the thr
 
 
 ### Flags parameter
-There is one special parameter called `flags`, which uses a bit format for configuring several VM options.
+There is one special parameter called `flags`, which uses a bit mask format for configuring several VM options.
 
     Active bit   Effect
       1          The system is 64-bit instead of 32-bit
-      2          Use regular deployment (HDD) instead of micro-iso
+      2          Use regular deployment (HDD) from an online source (instead of micro-iso)
       4          Include a guest additions CD-ROM
       8          Use floppyIO instead of contextualization CD-ROM
      16          Start the VM in headful mode
      32          Enable graphical extension (like drag-n-drop)
      64          Use secondary adapter instead of creating a NAT rule on the first one
     128          Use ttyS0 as external logfile.
-    256          Use bootable VDI file as the main image.
+    256          Use a bootable VDI file as the main deployment image.
 
+If you want to use online source deployment, you need to specify the `diskURL` and `diskChecksum` parameters.
+
+If you want to use a bootable VDI file, you need to provide the `diskPath` parameter.
 
 
 Destroy an existing VM
