@@ -229,12 +229,16 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
             }
         }
         if (!matchedFlag) { // unrecognized param, must be the user file or param file
-            if (userDataFile.empty())
+            if (userDataFile.empty()) {
                 userDataFile = argv[i];
-            else if (paramFile.empty())
+                std::cout << "Using user data file: " << userDataFile << std::endl;
+            }
+            else if (paramFile.empty()) {
                 paramFile = argv[i];
+                std::cout << "Using parameter file: " << paramFile << std::endl;
+            }
             else {
-                std::cerr << "Unrecognized parameter (" << argv[i] << ")\n";
+                std::cerr << "Unrecognized parameter: '" << argv[i] << "'\n";
                 return ERR_INVALID_PARAM_COUNT;
             }
         }
@@ -247,7 +251,6 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
         std::cerr << "'create' requires at least a 'user_data_file' argument" << std::endl;
         return ERR_INVALID_PARAM_COUNT;
     }
-    std::cout << "Using user data file: " << userDataFile << std::endl;
 
     Tools::configMapType paramMap;
     if (! paramFile.empty()) {
@@ -256,7 +259,6 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
             std::cerr << "Error while processing file: " << paramFile << std::endl;
             return ERR_INVALID_PARAM_TYPE;
         }
-        std::cout << "Using parameter file: " << paramFile << std::endl;
     }
     //add parameters from command line (they have the highest preference)
     std::map<std::string, std::string>::iterator it = paramFlags.begin();
