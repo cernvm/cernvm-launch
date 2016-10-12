@@ -53,6 +53,12 @@ int main(int argc, char** argv) {
     Tools::configMapTypePtr configMap = Tools::GetGlobalConfig();
     if (configMap) {
         if (configMap->find("launchHomeFolder") != configMap->end()) {
+            //check if given path is canonical
+            if (!Tools::IsCanonicalPath(configMap->at("launchHomeFolder"))) {
+                std::cerr << "Given launchHomeFolder: '" << configMap->at("launchHomeFolder")
+                          << "' is not a canonical path"  << std::endl;
+                return ERR_RUNTIME_ERROR;
+            }
             //Initialize the libcernvm path
             bool ret = setAppDataBasePath(configMap->at("launchHomeFolder"));
             if (! ret)
@@ -238,7 +244,8 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
                 std::cout << "Using parameter file: " << paramFile << std::endl;
             }
             else {
-                std::cerr << "Unrecognized parameter: '" << argv[i] << "'\n";
+                std::cerr << "Extra parameter given: '" << argv[i] << "'. "
+                          << "Option 'create' takes at most two arguments: user_data_file and config_file\n";
                 return ERR_INVALID_PARAM_COUNT;
             }
         }

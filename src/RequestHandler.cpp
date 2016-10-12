@@ -496,6 +496,18 @@ bool CheckCreationParameters(ParameterMapPtr params) {
             }
         }
     }
+    //check if paths are canonical
+    std::vector<std::string> paths = {
+        "sharedFolder",
+        "diskPath",
+    };
+    for (std::vector<std::string>::iterator it = paths.begin(); it != paths.end(); ++it) {
+        std::string value = params->get(*it, "");
+        if ((! value.empty() ) && (! Tools::IsCanonicalPath(value) )) {
+            std::cerr << "Value for parameter '" << *it << "' is not a canonical path: '" << value << "'" <<std::endl;
+            return false;
+        }
+    }
 
     return true;
 }

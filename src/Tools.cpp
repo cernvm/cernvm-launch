@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 
 #include <CernVM/Utilities.h>
 
@@ -97,6 +98,13 @@ bool GetUserInput(std::string& outValue) {
         return false;
 
     return true;
+}
+
+//We construct an canonical path for the given path. If they differ, the given one was not canonical
+bool IsCanonicalPath(const std::string& path) {
+    boost::filesystem::path canonicalPath = boost::filesystem::canonical(path);
+
+    return canonicalPath == boost::filesystem::path(path);
 }
 
 
