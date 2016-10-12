@@ -32,6 +32,8 @@ namespace Tools {
     configMapTypePtr GetGlobalConfig();
     //Prompts user for a value (terminated by Enter) and stores it outValue
     bool             GetUserInput(std::string& outValue);
+    //Check if given path is canonical
+    bool             IsCanonicalPath(const std::string& path);
     //Load the global config file.
     bool             LoadGlobalConfig(std::map<const std::string, const std::string>& outMap);
     //Load given file into the outMap

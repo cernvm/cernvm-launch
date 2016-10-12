@@ -32,6 +32,8 @@ Parameters are considered in the following precedence:
 
 Command line parameters > configuration file > global config > hardcoded defaults.
 
+When specifying `sharedFolder`, you must use a *canonical path*.
+
 ### Configuration file
 When creating a machine, you can specify the creation parameters in a configuration file.
 
@@ -44,6 +46,7 @@ Creation parameters file example with all recognized items:
     memory=512
     disk=10000
     diskChecksum=
+    sharedFolder=
     diskURL=
     diskPath=
     executionCap=100
@@ -156,6 +159,8 @@ On Linux:
 On Windows:
     
     ${USERPROFILE}\.cernvm-launch.conf
+
+When specifying `launchHomeFolder` and `sharedFolder`, you must use *canonical paths*.
 
 Config file example with all recognized items:
 
