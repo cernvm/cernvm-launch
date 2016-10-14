@@ -17,7 +17,7 @@ CernVM-Launch provides following operations.
 Create a virtual machine
 ------------------------
 
-	create [--no-start] [--name MACHINE_NAME] [--memory NUM] [--disk NUM]
+	create [--no-start] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]
            [--cpus NUM] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]
 		
 Create a machine with specified user (contextualization) data.
@@ -32,7 +32,7 @@ Parameters are considered in the following precedence:
 
 Command line parameters > configuration file > global config > hardcoded defaults.
 
-When specifying `sharedFolder`, you must use a *canonical path*.
+When specifying `sharedFolder`, you must use a **canonical path**.
 
 ### Configuration file
 When creating a machine, you can specify the creation parameters in a configuration file.
@@ -71,15 +71,15 @@ If a user does not provide all of the parameters (neither through one of the thr
 There is one special parameter called `flags`, which uses a bit mask format for configuring several VM options.
 
     Active bit   Effect
-      1          The system is 64-bit instead of 32-bit
-      2          Use regular deployment (HDD) from an online source (instead of micro-iso)
-      4          Include a guest additions CD-ROM
-      8          Use floppyIO instead of contextualization CD-ROM
-     16          Start the VM in headful mode
-     32          Enable graphical extension (like drag-n-drop)
-     64          Use secondary adapter instead of creating a NAT rule on the first one
-    128          Use ttyS0 as external logfile.
-    256          Use a bootable VDI file as the main deployment image.
+         1       The system is 64-bit instead of 32-bit
+         2       Use regular deployment (HDD) from an online source (instead of micro-iso)
+         4       Include a guest additions CD-ROM
+         8       Use floppyIO instead of contextualization CD-ROM
+        16       Start the VM in headful mode
+        32       Enable graphical extension (like drag-n-drop)
+        64       Use secondary adapter instead of creating a NAT rule on the first one
+       128       Use ttyS0 as external logfile.
+       256       Use a bootable VDI file as the main deployment image.
 
 If you want to use online source deployment, you need to specify the `diskURL` and `diskChecksum` parameters.
 
@@ -106,7 +106,7 @@ If MACHINE_NAME is specified, detailed information about a machine is displayed.
 Machine details contain the following fields:
 - cpus: how many assigned CPUs the machine has
 - memory: how much memory (in MB)
-- disk: how big the disk is (in kB)
+- disk: how big the disk is (in MB)
 - executionCap: hypervisor's execution capability
 - cernvmVersion: used CernVM version
 - apiPort: VM's port connected to the host OS
@@ -160,7 +160,7 @@ On Windows:
     
     ${USERPROFILE}\.cernvm-launch.conf
 
-When specifying `launchHomeFolder` and `sharedFolder`, you must use *canonical paths*.
+When specifying `launchHomeFolder` and `sharedFolder`, you must use **canonical paths**.
 
 Config file example with all recognized items:
 
