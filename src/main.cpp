@@ -290,7 +290,7 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
 void PrintHelp() {
     std::cout << "Usage: cernvm-launch OPTION\n"
               << "OPTIONS:\n"
-              << "\tcreate [--no-start] [--name MACHINE_NAME] [--memory NUM] [--disk NUM]\n"
+              << "\tcreate [--no-start] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]\n"
               << "\t       [--cpus NUM] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]\n"
               << "\t\tCreate a machine with specified user data.\n"
               << "\tdestroy [--force] MACHINE_NAME\tDestroy an existing machine.\n"
