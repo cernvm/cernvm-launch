@@ -500,11 +500,22 @@ bool CheckCreationParameters(ParameterMapPtr params) {
     std::vector<std::string> paths = {
         "sharedFolder",
         "diskPath",
+        "ovaPath"
     };
     for (std::vector<std::string>::iterator it = paths.begin(); it != paths.end(); ++it) {
         std::string value = params->get(*it, "");
         if ((! value.empty() ) && (! Tools::IsCanonicalPath(value) )) {
             std::cerr << "Value for parameter '" << *it << "' is not a canonical path: '" << value << "'" <<std::endl;
+            return false;
+        }
+    }
+
+    //if the user wants import from OVA, he needs to provide the ovaPath
+    std::string ovaImport = params->get("ovaImport", "");
+    boost::algorithm::to_lower(ovaImport);
+    if ((!ovaImport.empty()) && ovaImport == "true" || ovaImport == "yes") {
+        if ((params->get("ovaPath")).empty()) {
+            std::cerr << "You need to provide the 'ovaPath' parameter for OVA image import\n";
             return false;
         }
     }
@@ -515,7 +526,7 @@ bool CheckCreationParameters(ParameterMapPtr params) {
 
 //Prompt for username. if none is provided, use given default
 std::string PromptForMachineName(const std::string& defaultValue) {
-    std::cout << "Enter name [" << defaultValue << "]: ";
+    std::cout << "Enter VM name [" << defaultValue << "]: ";
     std::string userValue;
     if (! Tools::GetUserInput(userValue)) //no input
         return defaultValue;

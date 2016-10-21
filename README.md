@@ -17,7 +17,7 @@ CernVM-Launch provides following operations.
 Create a virtual machine
 ------------------------
 
-	create [--no-start] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]
+	create [--no-start] [--import-ova] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]
            [--cpus NUM] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]
 		
 Create a machine with specified user (contextualization) data.
@@ -32,7 +32,7 @@ Parameters are considered in the following precedence:
 
 Command line parameters > configuration file > global config > hardcoded defaults.
 
-When specifying `sharedFolder`, you must use a **canonical path**.
+When specifying `sharedFolder` or `ovaPath`, you must use a **canonical path**.
 
 ### Configuration file
 When creating a machine, you can specify the creation parameters in a configuration file.
@@ -49,6 +49,7 @@ Creation parameters file example with all recognized items:
     sharedFolder=
     diskURL=
     diskPath=
+    ovaPath=
     executionCap=100
     #Flags: 64bit, guest additions, (headless mode)
     flags=5
@@ -84,6 +85,8 @@ There is one special parameter called `flags`, which uses a bit mask format for 
 If you want to use online source deployment, you need to specify the `diskURL` and `diskChecksum` parameters.
 
 If you want to use a bootable VDI file, you need to provide the `diskPath` parameter.
+
+If you want to import an OVA image file, you need to provide the `ovaPath` parameter.
 
 
 Destroy an existing VM

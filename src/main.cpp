@@ -206,6 +206,7 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
         {"--sharedFolder", ""},
     };
     bool noStartFlag = false;
+    bool importFromOvaFlag = false;
     std::string userDataFile;
     std::string paramFile;
 
@@ -219,6 +220,10 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
     for (int i=2; i < argc; ++i) { // go through argv
         if (std::string(argv[i]) == "--no-start") { // this flag has no value
             noStartFlag = true;
+            continue;
+        }
+        else if (std::string(argv[i]) == "--import-ova") { // this flag has no value
+            importFromOvaFlag = true;
             continue;
         }
         bool matchedFlag = false;
@@ -251,7 +256,7 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
         }
     }
     //handler.createMachine(useData, boolStartOpt, paramFileOpt)
-    //Generic format: ./cernvm-launch create [--no-start] [--memory NUM] [--disk NUM] [--cpus NUM] [--sharedFolder PATH] userData_file [config_file]
+    //Generic format: ./cernvm-launch create [--no-start]i [--import-ova] [--memory NUM] [--disk NUM] [--cpus NUM] [--sharedFolder PATH] userData_file [config_file]
     bool success = false;
 
     if (userDataFile.empty()) {
@@ -267,6 +272,11 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
             return ERR_INVALID_PARAM_TYPE;
         }
     }
+
+    //if the user specified the '--import-ova' flag, put the control flag into parameters
+    if (importFromOvaFlag)
+        paramMap.insert(std::make_pair("ovaImport", "true"));
+
     //add parameters from command line (they have the highest preference)
     std::map<std::string, std::string>::iterator it = paramFlags.begin();
     for (; it != paramFlags.end(); ++it) {
@@ -290,7 +300,7 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
 void PrintHelp() {
     std::cout << "Usage: cernvm-launch OPTION\n"
               << "OPTIONS:\n"
-              << "\tcreate [--no-start] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]\n"
+              << "\tcreate [--no-start] [--import-ova] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]\n"
               << "\t       [--cpus NUM] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]\n"
               << "\t\tCreate a machine with specified user data.\n"
               << "\tdestroy [--force] MACHINE_NAME\tDestroy an existing machine.\n"
