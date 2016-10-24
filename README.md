@@ -183,3 +183,9 @@ Config file example with all recognized items:
     executionCap=100
     # Flags: 64bit, headful mode, graphical extensions
     flags=49
+
+
+Common problems
+===============
+
+If you encounter a problem with creating symlinks in the shared folder from the host OS, please restart VirtualBox.
