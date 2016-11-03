@@ -17,7 +17,7 @@ CernVM-Launch provides following operations.
 Create a virtual machine
 ------------------------
 
-	create [--no-start] [--import-ova] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]
+	create [--no-start] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]
            [--cpus NUM] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]
 		
 Create a machine with specified user (contextualization) data.
@@ -32,7 +32,7 @@ Parameters are considered in the following precedence:
 
 Command line parameters > configuration file > global config > hardcoded defaults.
 
-When specifying `sharedFolder` or `ovaPath`, you must use a **canonical path**.
+When specifying `sharedFolder`, you must use a **canonical path**.
 
 ### Configuration file
 When creating a machine, you can specify the creation parameters in a configuration file.
@@ -48,8 +48,8 @@ Creation parameters file example with all recognized items:
     diskChecksum=
     sharedFolder=
     diskURL=
+    diskChecksum=
     diskPath=
-    ovaPath=
     executionCap=100
     #Flags: 64bit, guest additions, (headless mode)
     flags=5
@@ -86,8 +86,17 @@ If you want to use online source deployment, you need to specify the `diskURL` a
 
 If you want to use a bootable VDI file, you need to provide the `diskPath` parameter.
 
-If you want to import an OVA image file, you need to provide the `ovaPath` parameter.
 
+Create a virtual machine through OVA image import
+-------------------------------------------------
+
+	import [--no-start] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]
+           [--cpus NUM] [--sharedFolder PATH] OVA_IMAGE_FILE [CONFIGURATION_FILE]
+
+When a machine is created via OVA import, no contextualization is done. The OVA image is also
+expected to be bootable.
+
+Configuration file has the same format as the `create` operation.
 
 Destroy an existing VM
 -----------------------
@@ -185,7 +194,7 @@ Config file example with all recognized items:
     flags=49
 
 
-Common problems
-===============
+Known issues
+============
 
 If you encounter a problem with creating symlinks in the shared folder from the host OS, please restart VirtualBox.

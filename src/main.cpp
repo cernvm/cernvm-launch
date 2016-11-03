@@ -30,7 +30,8 @@ bool CheckArgCount(int argc, int desiredCount, const std::string& errorMessageOn
 //(for avoiding prompting user for configuration too early
 int  CheckPrintHelp(int argc, char**argv);
 int  DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler);
-int  DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler);
+int  HandleCreateRequest(int argc, char** argv, Launch::RequestHandler& handler);
+int  HandleImportRequest(int argc, char** argv, Launch::RequestHandler& handler);
 void PrintHelp();
 void PrintVersion();
 
@@ -135,13 +136,17 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
     }
     //create a VM
     else if (action == "create") {
-        return DispatchCreateRequest(argc, argv, handler);
+        return HandleCreateRequest(argc, argv, handler);
     }
     //pause a VM
     else if (action == "pause") {
         if (!CheckArgCount(argc, 3, "'pause' requires one argument: machine name"))
             return ERR_INVALID_PARAM_COUNT;
         success = handler.pauseMachine(argv[2]);
+    }
+    //import a VM
+    else if (action == "import") {
+        return HandleImportRequest(argc, argv, handler);
     }
     //start a VM
     else if (action == "start") {
@@ -195,7 +200,7 @@ int DispatchArguments(int argc, char** argv, Launch::RequestHandler& handler) {
 
 //Parse given arguments and invoke an appropriate method. Print error message on invalid input
 //Returns err code
-int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler) {
+int HandleCreateRequest(int argc, char** argv, Launch::RequestHandler& handler) {
 
     //These parameters flags require a value, e.g. --ram 512
     std::map<std::string, std::string> paramFlags = {
@@ -206,7 +211,6 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
         {"--sharedFolder", ""},
     };
     bool noStartFlag = false;
-    bool importFromOvaFlag = false;
     std::string userDataFile;
     std::string paramFile;
 
@@ -220,10 +224,6 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
     for (int i=2; i < argc; ++i) { // go through argv
         if (std::string(argv[i]) == "--no-start") { // this flag has no value
             noStartFlag = true;
-            continue;
-        }
-        else if (std::string(argv[i]) == "--import-ova") { // this flag has no value
-            importFromOvaFlag = true;
             continue;
         }
         bool matchedFlag = false;
@@ -256,9 +256,7 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
         }
     }
     //handler.createMachine(useData, boolStartOpt, paramFileOpt)
-    //Generic format: ./cernvm-launch create [--no-start]i [--import-ova] [--memory NUM] [--disk NUM] [--cpus NUM] [--sharedFolder PATH] userData_file [config_file]
-    bool success = false;
-
+    //Generic format: ./cernvm-launch create [--no-start] [--memory NUM] [--disk NUM] [--cpus NUM] [--sharedFolder PATH] userData_file [config_file]
     if (userDataFile.empty()) {
         std::cerr << "'create' requires at least a 'user_data_file' argument" << std::endl;
         return ERR_INVALID_PARAM_COUNT;
@@ -273,10 +271,6 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
         }
     }
 
-    //if the user specified the '--import-ova' flag, put the control flag into parameters
-    if (importFromOvaFlag)
-        paramMap.insert(std::make_pair("ovaImport", "true"));
-
     //add parameters from command line (they have the highest preference)
     std::map<std::string, std::string>::iterator it = paramFlags.begin();
     for (; it != paramFlags.end(); ++it) {
@@ -288,7 +282,96 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
         paramMap.insert(std::make_pair(key, it->second));
     }
 
-    success = handler.createMachine(userDataFile, !noStartFlag, paramMap);
+    bool success = handler.createMachine(userDataFile, !noStartFlag, paramMap);
+
+    if (success)
+        return ERR_OK;
+    else
+        return ERR_RUNTIME_ERROR;
+}
+
+
+int HandleImportRequest(int argc, char** argv, Launch::RequestHandler& handler) {
+    //These parameters flags require a value, e.g. --ram 512
+    std::map<std::string, std::string> paramFlags = {
+        {"--memory", ""},
+        {"--cpus", ""},
+        {"--disk", ""},
+        {"--name", ""},
+        {"--sharedFolder", ""},
+    };
+
+    if (argc <= 1 || std::string(argv[1]) != "import")
+        return ERR_INVALID_OPERATION;
+    if (argc < 3) {
+        std::cerr << "'import' requires at least an OVA filename argument" << std::endl;
+        return ERR_INVALID_PARAM_COUNT;
+    }
+
+    std::string imageFile;
+    std::string paramFile;
+    bool noStartFlag = false;
+
+    for (int i=2; i < argc; ++i) { // go through argv
+        if (std::string(argv[i]) == "--no-start") { // this flag has no value
+            noStartFlag = true;
+            continue;
+        }
+        bool matchedFlag = false;
+        std::map<std::string, std::string>::iterator it = paramFlags.begin();
+        for (; it != paramFlags.end(); ++it) { // go through paramFlags
+            if (it->first == std::string(argv[i])) { // matched our paramFlag with argv
+                matchedFlag = true;
+                if (i+1 == argc) {
+                    std::cerr << "Missing value for: " << argv[i] << std::endl;
+                    return ERR_INVALID_PARAM_COUNT;
+                }
+                it->second = argv[++i]; //++i because we just consumed the next argument
+                break;
+            }
+        }
+        if (!matchedFlag) { // unrecognized param, must be the user file or param file
+            if (imageFile.empty()) {
+                imageFile = argv[i];
+                std::cout << "Using image file: " << imageFile << std::endl;
+            }
+            else if (paramFile.empty()) {
+                paramFile = argv[i];
+                std::cout << "Using parameter file: " << paramFile << std::endl;
+            }
+            else {
+                std::cerr << "Extra parameter given: '" << argv[i] << "'. "
+                          << "Option 'import' takes at most two arguments: ova_image_file and config_file\n";
+                return ERR_INVALID_PARAM_COUNT;
+            }
+        }
+    }
+    if (imageFile.empty()) {
+        std::cerr << "'import' requires at least an 'ova_image_file' argument" << std::endl;
+        return ERR_INVALID_PARAM_COUNT;
+    }
+
+    Tools::configMapType paramMap;
+    if (! paramFile.empty()) {
+        bool res = Tools::LoadFileIntoMap(paramFile, paramMap);
+        if (!res) {
+            std::cerr << "Error while processing file: " << paramFile << std::endl;
+            return ERR_INVALID_PARAM_TYPE;
+        }
+    }
+
+    //add parameters from command line (they have the highest preference)
+    std::map<std::string, std::string>::iterator it = paramFlags.begin();
+    for (; it != paramFlags.end(); ++it) {
+        if ((it->second).empty()) // no value set
+            continue;
+        std::string key = (it->first).substr(2); // remove the '--'
+        if (paramMap.find(key) != paramMap.end())
+            paramMap.erase(paramMap.find(key));
+        paramMap.insert(std::make_pair(key, it->second));
+    }
+
+    bool success = handler.importMachine(imageFile, !noStartFlag, paramMap);
 
     if (success)
         return ERR_OK;
@@ -300,10 +383,13 @@ int DispatchCreateRequest(int argc, char** argv, Launch::RequestHandler& handler
 void PrintHelp() {
     std::cout << "Usage: cernvm-launch OPTION\n"
               << "OPTIONS:\n"
-              << "\tcreate [--no-start] [--import-ova] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]\n"
+              << "\tcreate [--no-start] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]\n"
               << "\t       [--cpus NUM] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]\n"
               << "\t\tCreate a machine with specified user data.\n"
               << "\tdestroy [--force] MACHINE_NAME\tDestroy an existing machine.\n"
+              << "\timport [--no-start] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]\n"
+              << "\t       [--cpus NUM] [--sharedFolder PATH] OVA_IMAGE_FILE [CONFIGURATION_FILE]\n"
+              << "\t\tCreate a new machine from an OVA image.\n"
               << "\tlist [--running] [MACHINE_NAME]\tList all existing machines or a detailed info about one.\n"
               << "\tpause MACHINE_NAME\tPause a running machine.\n"
               << "\tssh MACHINE_NAME\tSSH into an existing machine.\n"

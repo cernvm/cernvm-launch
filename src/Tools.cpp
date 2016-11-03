@@ -102,7 +102,15 @@ bool GetUserInput(std::string& outValue) {
 
 //We construct an canonical path for the given path. If they differ, the given one was not canonical
 bool IsCanonicalPath(const std::string& path) {
-    boost::filesystem::path canonicalPath = boost::filesystem::canonical(path);
+
+    boost::filesystem::path canonicalPath;
+    try {
+        canonicalPath = boost::filesystem::canonical(path);
+    }
+    catch (boost::filesystem::filesystem_error& e) {
+        std::cerr << e.what() << std::endl;
+        return false;
+    }
 
     return canonicalPath == boost::filesystem::path(path);
 }
