@@ -108,7 +108,8 @@ bool IsCanonicalPath(const std::string& path) {
         canonicalPath = boost::filesystem::canonical(path);
     }
     catch (boost::filesystem::filesystem_error& e) {
-        std::cerr << e.what() << std::endl;
+        std::string errStr = e.what();
+        std::cerr << errStr.substr(errStr.find(": ")+2) << std::endl; // strip 'boost::filesystem::canonical: '
         return false;
     }
 

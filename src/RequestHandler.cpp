@@ -228,9 +228,8 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
 
     //Load missing values from the global config file
     Tools::configMapTypePtr configMap = Tools::GetGlobalConfig();
-    if (configMap) {
+    if (configMap)
         Tools::AddMissingValuesToMap(paramMap, *configMap);
-    }
 
     //Load missing values from the hardcoded config
     Tools::AddMissingValuesToMap(paramMap, DefaultCreationParams);
@@ -312,7 +311,8 @@ bool RequestHandler::importMachine(const std::string& imageFilename, bool startM
         imageFilePath = boost::filesystem::canonical(imageFilename);
     }
     catch (boost::filesystem::filesystem_error& e) {
-        std::cerr << e.what() << std::endl;
+        std::string errStr = e.what();
+        std::cerr << errStr.substr(errStr.find(": ")+2) << std::endl; // strip 'boost::filesystem::canonical: '
         return false;
     }
 
