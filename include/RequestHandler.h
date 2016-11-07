@@ -29,6 +29,8 @@ class RequestHandler {
         //startMachine: whether to start the machine after creation
         //params: parameter map with creation parameters
         bool createMachine(const std::string& userDataFile, bool startMachine, Tools::configMapType& params);
+        //Import an OVA image
+        bool importMachine(const std::string& imageFilename, bool startMachine, Tools::configMapType& params);
         //Destroy a machine. By default, it does not destroy a running machine, use force=true for that
         bool destroyMachine(const std::string& machineName, bool force=false);
         //Pause machine

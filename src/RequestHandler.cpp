@@ -12,6 +12,7 @@
 #include <unistd.h> // for exec
 #endif
 
+#include <boost/filesystem.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -208,39 +209,32 @@ bool RequestHandler::listMachineDetail(const std::string& machineName) {
 
 
 bool RequestHandler::createMachine(const std::string& userDataFile, bool startMachine, Tools::configMapType& paramMap) {
-    std::string userData;
-    bool res = Tools::LoadFileIntoString(userDataFile, userData);
-
-    if (!res) {
-        std::cerr << "Error while processing file: " << userDataFile << std::endl;
-        return false;
-    }
-
-    //if user accidentally specified userData in parameter map file, we overwrite it
-    paramMapType::iterator it = paramMap.find("userData");
-    if (it != paramMap.end()) {
-        std::cout << "Ignoring the userData specified in the parameter file, using userData file instead\n";
-        paramMap.erase(it);
-    }
-
-    paramMap.insert(std::make_pair<const std::string, const std::string>("userData", static_cast<const std::string>(userData)));
-
-    //Load missing values from the global config file
-    Tools::configMapTypePtr configMap = Tools::GetGlobalConfig();
-    if (configMap) {
-        Tools::AddMissingValuesToMap(paramMap, *configMap);
-    }
-
-    //Load missing values from the hardcoded config
-    Tools::AddMissingValuesToMap(paramMap, DefaultCreationParams);
-
     HVInstancePtr hv = detectHypervisor();
     if (!hv) {
         std::cerr << "Unable to detect hypervisor\n";
         return false;
     }
+    if (!userDataFile.empty()) { //user wants to provide the user data
+        std::string userData;
+        bool res = Tools::LoadFileIntoString(userDataFile, userData);
 
-    //create a parameter map from std::map
+        if (!res) {
+            std::cerr << "Error while processing file: " << userDataFile << std::endl;
+            return false;
+        }
+        //Save user data
+        paramMap.insert(std::make_pair<const std::string, const std::string>("userData", static_cast<const std::string>(userData)));
+    }
+
+    //Load missing values from the global config file
+    Tools::configMapTypePtr configMap = Tools::GetGlobalConfig();
+    if (configMap)
+        Tools::AddMissingValuesToMap(paramMap, *configMap);
+
+    //Load missing values from the hardcoded config
+    Tools::AddMissingValuesToMap(paramMap, DefaultCreationParams);
+
+    //Convert the parameter map from std::map
     ParameterMapPtr parameters = ParameterMap::instance();
     parameters->fromMap(&paramMap);
 
@@ -251,8 +245,6 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
     hv->loadSessions();
     sessionMapType sessions = hv->sessions;
 
-    parameters->set("secret", "defaultSecret"); //this is needed by libcernvm
-
     std::string machineName = parameters->get("name", "");
 
     //VM name missing, prompt the user
@@ -260,6 +252,8 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
         std::string defaultMachineName = getFilename(userDataFile); //get the basename
         if (defaultMachineName.find('.') != std::string::npos) //strip extension if needed
             defaultMachineName = defaultMachineName.substr(0, defaultMachineName.find('.'));
+        if (defaultMachineName.empty())
+            defaultMachineName = "CernVM";
 
         machineName = PromptForMachineName(defaultMachineName);
         parameters->set("name", machineName);
@@ -303,6 +297,51 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
     }
 
     return true;
+}
+
+
+bool RequestHandler::importMachine(const std::string& imageFilename, bool startMachine, Tools::configMapType& paramMap) {
+    //set all the required information for the libcernvm
+    //set the ovaImport flag, so libcernvm knows we're making OVA import
+    paramMap.insert(std::make_pair("ovaImport", "true"));
+
+    //made path canonical and save it
+    boost::filesystem::path imageFilePath;
+    try {
+        imageFilePath = boost::filesystem::canonical(imageFilename);
+    }
+    catch (boost::filesystem::filesystem_error& e) {
+        std::string errStr = e.what();
+        std::cerr << errStr.substr(errStr.find(": ")+2) << std::endl; // strip 'boost::filesystem::canonical: '
+        return false;
+    }
+
+    Tools::configMapType::iterator it = paramMap.find("ovaPath");
+    if (it != paramMap.end())
+        paramMap.erase(it);
+    paramMap.insert(std::make_pair("ovaPath", imageFilePath.string()));
+
+    //set the import flag
+    std::string flags;
+    it = paramMap.find("flags");
+    if (it == paramMap.end())
+        flags = "49";
+    else {
+        flags = it->second;
+        paramMap.erase(it);
+    }
+    int numFlags;
+    try {
+        numFlags = std::stoi(flags);
+    }
+    catch (...) {
+        numFlags = 49;
+    }
+    numFlags |= HVF_IMPORT_OVA;
+    flags = std::to_string(numFlags);
+    paramMap.insert(std::make_pair("flags", flags));
+
+    return this->createMachine("", startMachine, paramMap); // no user data file
 }
 
 
@@ -478,6 +517,9 @@ bool RequestHandler::stopMachine(const std::string& machineName) {
 namespace {
 
 bool CheckCreationParameters(ParameterMapPtr params) {
+    //this is needed by libcernvm
+    params->set("secret", "defaultSecret");
+
     //check flags
     int flags = params->getNum<int>("flags", 0);
     if (flags) {
@@ -509,13 +551,19 @@ bool CheckCreationParameters(ParameterMapPtr params) {
         }
     }
 
+    //if user accidentally specified userData in parameter map file, we overwrite it
+    if (params->contains("userData")) {
+        std::cout << "Ignoring the userData specified in the parameter file, using userData file instead\n";
+        params->erase("userData");
+    }
+
     return true;
 }
 
 
 //Prompt for username. if none is provided, use given default
 std::string PromptForMachineName(const std::string& defaultValue) {
-    std::cout << "Enter name [" << defaultValue << "]: ";
+    std::cout << "Enter VM name [" << defaultValue << "]: ";
     std::string userValue;
     if (! Tools::GetUserInput(userValue)) //no input
         return defaultValue;
