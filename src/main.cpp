@@ -22,7 +22,7 @@ using namespace Launch;
 namespace {
 
 //CernVM-Launch version
-const std::string VERSION = "0.9.1";
+const std::string VERSION = "0.9.2";
 
 //Module local functions
 bool CheckArgCount(int argc, int desiredCount, const std::string& errorMessageOnFail);

@@ -96,7 +96,7 @@ Create a virtual machine through OVA image import
 When a machine is created via OVA import, no contextualization is done. The OVA image is also
 expected to be bootable.
 
-Configuration file has the same format as the `create` operation.
+Configuration file has the same format as in the `create` operation.
 
 Destroy an existing VM
 -----------------------
