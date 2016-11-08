@@ -222,6 +222,12 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
             std::cerr << "Error while processing file: " << userDataFile << std::endl;
             return false;
         }
+        //if user accidentally specified userData in parameter map file, we overwrite it
+        Tools::configMapType::iterator it = paramMap.find("userData");
+        if (it != paramMap.end()) {
+            std::cout << "Ignoring the userData specified in the parameter file, using userData file instead\n";
+            paramMap.erase(it);
+        }
         //Save user data
         paramMap.insert(std::make_pair<const std::string, const std::string>("userData", static_cast<const std::string>(userData)));
     }
@@ -549,12 +555,6 @@ bool CheckCreationParameters(ParameterMapPtr params) {
             std::cerr << "Value for parameter '" << *it << "' is not a canonical path: '" << value << "'" <<std::endl;
             return false;
         }
-    }
-
-    //if user accidentally specified userData in parameter map file, we overwrite it
-    if (params->contains("userData")) {
-        std::cout << "Ignoring the userData specified in the parameter file, using userData file instead\n";
-        params->erase("userData");
     }
 
     return true;
