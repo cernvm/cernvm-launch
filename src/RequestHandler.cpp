@@ -31,8 +31,11 @@ using namespace Launch;
 //helper functions and definitions in an anonymous namespace (local)
 namespace {
 
-typedef Tools::configMapType  paramMapType;
-typedef std::map<std::string, HVSessionPtr>             sessionMapType;
+typedef Tools::configMapType                paramMapType;
+typedef std::map<std::string, HVSessionPtr> sessionMapType;
+
+//How many times we try to destroy the VM (must be positive)
+const int DESTROY_TRIES = 2;
 
 //If no parameters are provided (either via user param file or global config), these are used
 const paramMapType DefaultCreationParams = {
@@ -383,11 +386,18 @@ bool RequestHandler::destroyMachine(const std::string& machineName, bool force) 
         vboxSession->wait();
     }
 
-    int ret = vboxSession->destroyVM();
-    vboxSession->wait();
+    int ret;
+    for (int i=0; i < DESTROY_TRIES; ++i) {
+        ret = vboxSession->destroyVM();
+        vboxSession->wait();
 
-    if (ret != HVE_OK) {
-        std::cerr << "Unable to delete the machine.\n";
+        if (ret == HVE_OK)
+            break;
+
+        sleepMs(6000); //give VBox time to recover
+    }
+    if (ret != HVE_OK) { // we failed every time
+        std::cerr << "Unable to delete the machine, tried " << DESTROY_TRIES << " times\n";
         return false;
     }
     hv->sessionDelete(session);
