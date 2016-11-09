@@ -116,6 +116,21 @@ bool IsCanonicalPath(const std::string& path) {
     return canonicalPath == boost::filesystem::path(path);
 }
 
+//Make a canonical path from a relative one
+bool MakeAbsolutePath(const std::string& path, std::string& outPath) {
+    boost::filesystem::path absolutePath;
+    try {
+        absolutePath = boost::filesystem::absolute(path);
+    }
+    catch (boost::filesystem::filesystem_error& e) {
+        std::string errStr = e.what();
+        std::cerr << errStr.substr(errStr.find(": ")+2) << std::endl; // strip 'boost::filesystem::absolute: '
+        return false;
+    }
+    outPath = absolutePath.string();
+    return true;
+}
+
 
 //Load global config file (with default VM parameters and Launch configuration)
 bool LoadGlobalConfig(std::map<const std::string, const std::string>& outMap) {

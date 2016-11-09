@@ -51,9 +51,7 @@ const std::vector<std::string> CreationInfoFields = {
     "cpus",
     "memory",
     "disk",
-    "executionCap",
     "cernvmVersion",
-    "apiPort",
     "sharedFolder",
 };
 

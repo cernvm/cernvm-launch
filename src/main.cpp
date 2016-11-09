@@ -54,12 +54,17 @@ int main(int argc, char** argv) {
     Tools::configMapTypePtr configMap = Tools::GetGlobalConfig();
     if (configMap) {
         if (configMap->find("launchHomeFolder") != configMap->end()) {
-            //check if given path is canonical
-            if (!Tools::IsCanonicalPath(configMap->at("launchHomeFolder"))) {
-                std::cerr << "Given launchHomeFolder: '" << configMap->at("launchHomeFolder")
-                          << "' is not a canonical path"  << std::endl;
+            std::string canonLaunchPath;
+            if (!Tools::MakeAbsolutePath(configMap->at("launchHomeFolder"), canonLaunchPath)) {
+                std::cerr << "Unable to create an absolute path from the given launchHomeFolder: "
+                          << configMap->at("launchHomeFolder") << std::endl;
                 return ERR_RUNTIME_ERROR;
             }
+
+            //Save the absolute path to the config map
+            configMap->erase("launchHomeFolder");
+            configMap->insert(std::make_pair("launchHomeFolder", canonLaunchPath));
+
             //Initialize the libcernvm path
             bool ret = setAppDataBasePath(configMap->at("launchHomeFolder"));
             if (! ret)
