@@ -67,6 +67,12 @@ bool CreateDefaultGlobalConfig() {
     std::string launchDir;
     if (!GetUserInput(launchDir))
         launchDir = getDefaultAppDataBaseDir();
+    else if (! IsCanonicalPath(launchDir)) {
+        std::string defaultPath = getDefaultAppDataBaseDir();
+        std::cerr << "Given path '" << launchDir << "' is not canonical, using default: '" << defaultPath << "'.\n";
+        std::cerr << "You can change it later in the config file.\n";
+        launchDir = defaultPath;
+    }
 
     ofs << defaultConfigFileStrPartOne << launchDir << "\n" << defaultConfigFileStrPartTwo; //ofs is closed on object destroy
 
@@ -113,8 +119,6 @@ bool IsCanonicalPath(const std::string& path) {
         canonicalPath = boost::filesystem::canonical(path);
     }
     catch (boost::filesystem::filesystem_error& e) {
-        std::string errStr = e.what();
-        std::cerr << errStr.substr(errStr.find(": ")+2) << std::endl; // strip 'boost::filesystem::canonical: '
         return false;
     }
 

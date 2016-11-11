@@ -165,7 +165,7 @@ Global config file
 
 Global config file has to be named `.cernvm-launch.conf` and placed in the user home directory, i.e.:
 
-On Linux:
+On Linux and Mac:
 
     ~/.cernvm-launch.conf
 On Windows:
@@ -179,7 +179,8 @@ Config file example with all recognized items:
     ########### CernVM-Launch configuration ###########
     # Folder on the host OS which will be shared to VMs
     sharedFolder=
-    # Folder on the host OS where all VM configuration files and images are stored (can get large)
+    # Base folder on the host OS where a CernVM subdirectory ('CernVM' on Win and Mac, '.cernvm' on Linux) is created.
+    # All VM configuration files and images are stored in this subdirectory (can get large).
     # Changing this folder will disconnect already existing machines from CernVM-Launch
     launchHomeFolder=
     ########### Default VM parameters ###########
