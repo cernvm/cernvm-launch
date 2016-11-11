@@ -69,6 +69,8 @@ bool CreateDefaultGlobalConfig() {
         launchDir = getDefaultAppDataBaseDir();
 
     ofs << defaultConfigFileStrPartOne << launchDir << "\n" << defaultConfigFileStrPartTwo; //ofs is closed on object destroy
+
+    return true;
 }
 
 
@@ -78,13 +80,16 @@ configMapTypePtr GetGlobalConfig() {
         bool configLoaded = LoadGlobalConfig(GlobalConfigMap);
         if (!configLoaded) { //unable to load the config, create a default one
             if (!CreateDefaultGlobalConfig()) { //unable to write a global config file
+                std::cerr << "Unable to create default config\n";
                 return NULL;
             }
             GlobalConfigMap.clear();
         }
         configLoaded = LoadGlobalConfig(GlobalConfigMap);
-        if (!configLoaded) //unable to load the newly created config
+        if (!configLoaded) { //unable to load the newly created config
+            std::cerr << "Unable to load newly created config\n";
             return NULL;
+    }
     }
     return &GlobalConfigMap;
 }
