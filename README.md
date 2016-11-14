@@ -173,7 +173,7 @@ On Windows:
     ${USERPROFILE}\.cernvm-launch.conf
 
 When specifying `launchHomeFolder` and `sharedFolder`, you must use **canonical paths**.
-For the moment, launchHomeFolder is not supported on Mac OS.
+For the moment, `launchHomeFolder` is not supported on Mac OS.
 
 Config file example with all recognized items:
 
