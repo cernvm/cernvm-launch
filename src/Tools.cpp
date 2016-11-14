@@ -60,11 +60,16 @@ bool CreateDefaultGlobalConfig() {
         return false;
 
     std::cout << "Creating a new global config: " << GLOBAL_CONFIG_FILENAME << std::endl;
+    std::string launchDir;
 
+#if defined(__APPLE__) && defined(__MACH__) // we can't configure base dir on Mac (permissions)
+    std::cout << "On Mac you can't configure launchHomeFolder\n";
+    launchDir = getDefaultAppDataBaseDir();
+
+#else // Linux and Win
     std::cout << "Enter a directory where do you want keep all CernVM-Launch files: VM images, disk files, etc. "
               << "These files can grow substantially.\n"
               << "Enter directory [" << getDefaultAppDataBaseDir() << "]: ";
-    std::string launchDir;
     if (!GetUserInput(launchDir))
         launchDir = getDefaultAppDataBaseDir();
     else if (! IsCanonicalPath(launchDir)) {
@@ -73,6 +78,7 @@ bool CreateDefaultGlobalConfig() {
         std::cerr << "You can change it later in the config file.\n";
         launchDir = defaultPath;
     }
+#endif
 
     ofs << defaultConfigFileStrPartOne << launchDir << "\n" << defaultConfigFileStrPartTwo; //ofs is closed on object destroy
 
@@ -113,7 +119,6 @@ bool GetUserInput(std::string& outValue) {
 
 //We construct an canonical path for the given path. If they differ, the given one was not canonical
 bool IsCanonicalPath(const std::string& path) {
-
     boost::filesystem::path canonicalPath;
     try {
         canonicalPath = boost::filesystem::canonical(path);
