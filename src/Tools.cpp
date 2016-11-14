@@ -60,15 +60,29 @@ bool CreateDefaultGlobalConfig() {
         return false;
 
     std::cout << "Creating a new global config: " << GLOBAL_CONFIG_FILENAME << std::endl;
+    std::string launchDir;
 
+#if defined(__APPLE__) && defined(__MACH__) // we can't configure base dir on Mac (permissions)
+    std::cout << "On Mac you can't configure launchHomeFolder\n";
+    launchDir = getDefaultAppDataBaseDir();
+
+#else // Linux and Win
     std::cout << "Enter a directory where do you want keep all CernVM-Launch files: VM images, disk files, etc. "
               << "These files can grow substantially.\n"
               << "Enter directory [" << getDefaultAppDataBaseDir() << "]: ";
-    std::string launchDir;
     if (!GetUserInput(launchDir))
         launchDir = getDefaultAppDataBaseDir();
+    else if (! IsCanonicalPath(launchDir)) {
+        std::string defaultPath = getDefaultAppDataBaseDir();
+        std::cerr << "Given path '" << launchDir << "' is not canonical, using default: '" << defaultPath << "'.\n";
+        std::cerr << "You can change it later in the config file.\n";
+        launchDir = defaultPath;
+    }
+#endif
 
     ofs << defaultConfigFileStrPartOne << launchDir << "\n" << defaultConfigFileStrPartTwo; //ofs is closed on object destroy
+
+    return true;
 }
 
 
@@ -78,13 +92,16 @@ configMapTypePtr GetGlobalConfig() {
         bool configLoaded = LoadGlobalConfig(GlobalConfigMap);
         if (!configLoaded) { //unable to load the config, create a default one
             if (!CreateDefaultGlobalConfig()) { //unable to write a global config file
+                std::cerr << "Unable to create default config\n";
                 return NULL;
             }
             GlobalConfigMap.clear();
         }
         configLoaded = LoadGlobalConfig(GlobalConfigMap);
-        if (!configLoaded) //unable to load the newly created config
+        if (!configLoaded) { //unable to load the newly created config
+            std::cerr << "Unable to load newly created config\n";
             return NULL;
+    }
     }
     return &GlobalConfigMap;
 }
@@ -102,18 +119,30 @@ bool GetUserInput(std::string& outValue) {
 
 //We construct an canonical path for the given path. If they differ, the given one was not canonical
 bool IsCanonicalPath(const std::string& path) {
-
     boost::filesystem::path canonicalPath;
     try {
         canonicalPath = boost::filesystem::canonical(path);
     }
     catch (boost::filesystem::filesystem_error& e) {
-        std::string errStr = e.what();
-        std::cerr << errStr.substr(errStr.find(": ")+2) << std::endl; // strip 'boost::filesystem::canonical: '
         return false;
     }
 
     return canonicalPath == boost::filesystem::path(path);
+}
+
+//Make a canonical path from a relative one
+bool MakeAbsolutePath(const std::string& path, std::string& outPath) {
+    boost::filesystem::path absolutePath;
+    try {
+        absolutePath = boost::filesystem::absolute(path);
+    }
+    catch (boost::filesystem::filesystem_error& e) {
+        std::string errStr = e.what();
+        std::cerr << errStr.substr(errStr.find(": ")+2) << std::endl; // strip 'boost::filesystem::absolute: '
+        return false;
+    }
+    outPath = absolutePath.string();
+    return true;
 }
 
 

@@ -31,8 +31,11 @@ using namespace Launch;
 //helper functions and definitions in an anonymous namespace (local)
 namespace {
 
-typedef Tools::configMapType  paramMapType;
-typedef std::map<std::string, HVSessionPtr>             sessionMapType;
+typedef Tools::configMapType                paramMapType;
+typedef std::map<std::string, HVSessionPtr> sessionMapType;
+
+//How many times we try to destroy the VM (must be positive)
+const int DESTROY_TRIES = 2;
 
 //If no parameters are provided (either via user param file or global config), these are used
 const paramMapType DefaultCreationParams = {
@@ -51,9 +54,7 @@ const std::vector<std::string> CreationInfoFields = {
     "cpus",
     "memory",
     "disk",
-    "executionCap",
     "cernvmVersion",
-    "apiPort",
     "sharedFolder",
 };
 
@@ -222,6 +223,12 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
             std::cerr << "Error while processing file: " << userDataFile << std::endl;
             return false;
         }
+        //if user accidentally specified userData in parameter map file, we overwrite it
+        Tools::configMapType::iterator it = paramMap.find("userData");
+        if (it != paramMap.end()) {
+            std::cout << "Ignoring the userData specified in the parameter file, using userData file instead\n";
+            paramMap.erase(it);
+        }
         //Save user data
         paramMap.insert(std::make_pair<const std::string, const std::string>("userData", static_cast<const std::string>(userData)));
     }
@@ -379,11 +386,18 @@ bool RequestHandler::destroyMachine(const std::string& machineName, bool force) 
         vboxSession->wait();
     }
 
-    int ret = vboxSession->destroyVM();
-    vboxSession->wait();
+    int ret;
+    for (int i=0; i < DESTROY_TRIES; ++i) {
+        ret = vboxSession->destroyVM();
+        vboxSession->wait();
 
-    if (ret != HVE_OK) {
-        std::cerr << "Unable to delete the machine.\n";
+        if (ret == HVE_OK)
+            break;
+
+        sleepMs(6000); //give VBox time to recover
+    }
+    if (ret != HVE_OK) { // we failed every time
+        std::cerr << "Unable to delete the machine, tried " << DESTROY_TRIES << " times\n";
         return false;
     }
     hv->sessionDelete(session);
@@ -549,12 +563,6 @@ bool CheckCreationParameters(ParameterMapPtr params) {
             std::cerr << "Value for parameter '" << *it << "' is not a canonical path: '" << value << "'" <<std::endl;
             return false;
         }
-    }
-
-    //if user accidentally specified userData in parameter map file, we overwrite it
-    if (params->contains("userData")) {
-        std::cout << "Ignoring the userData specified in the parameter file, using userData file instead\n";
-        params->erase("userData");
     }
 
     return true;

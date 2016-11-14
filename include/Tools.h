@@ -34,6 +34,8 @@ namespace Tools {
     bool             GetUserInput(std::string& outValue);
     //Check if given path is canonical
     bool             IsCanonicalPath(const std::string& path);
+    //Make absolute path from a given relative one
+    bool             MakeAbsolutePath(const std::string& path, std::string& outPath);
     //Load the global config file.
     bool             LoadGlobalConfig(std::map<const std::string, const std::string>& outMap);
     //Load given file into the outMap
