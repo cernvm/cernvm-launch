@@ -1,7 +1,8 @@
 CernVM-Launch
 =============
 
-CernVM command line utility to control VirtualBox CernVMs.
+CernVM command line utility to control VirtualBox CernVMs. For user introduction, please
+visit the [Official CernVM-Launch page](http://cernvm.cern.ch/portal/launch).
 
 Requirements
 ============
