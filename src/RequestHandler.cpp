@@ -218,7 +218,22 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
 
     Tools::configMapType::iterator it;
 
-    if (!userDataFile.empty()) { //user wants to provide the user data
+    if (userDataFile.empty()) { // no user data provided, ask to use the default
+        std::string decision;
+        std::cout << "You have not provided a user data file, do you want to use a default one?\n";
+        std::cout << "Default user data:\n\n" << DEFAULT_USER_DATA << std::endl;
+        std::cout << "Continue with default context? [Y/n]: "; //default is yes
+        bool gotInput = Tools::GetUserInput(decision);
+        boost::algorithm::to_lower(decision);
+
+        if (gotInput && decision != "y" && decision != "yes") { //something else than yes
+            std::cout << "Aborting, no context provided\n";
+            return false;
+        }
+        //Save user data
+        paramMap.insert(std::make_pair<const std::string, const std::string>("userData", static_cast<const std::string>(DEFAULT_USER_DATA)));
+    }
+    else { //user wants to provide the user data
         std::string userData;
         bool res = Tools::LoadFileIntoString(userDataFile, userData);
 

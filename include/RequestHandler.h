@@ -12,6 +12,21 @@
 
 namespace Launch {
 
+const std::string DEFAULT_USER_DATA = \
+"[amiconfig]\n"
+"plugins=cernvm\n"
+"[cernvm]\n"
+"auto_login=on\n"
+"organisations=\n"
+"repositories=\n"
+"shell=/bin/bash\n"
+"config_url=http://cernvm.cern.ch/config\n"
+"users=user:user:password\n"
+"edition=Desktop\n"
+"screenRes=1280x800\n"
+"keyboard=us-acentos\n"
+"startXDM=on\n";
+
 //Handles user requests, providing appropriate response.
 //All of the methods return true on success, false otherwise.
 class RequestHandler {

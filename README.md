@@ -19,10 +19,30 @@ Create a virtual machine
 ------------------------
 
     create [--no-start] [--name MACHINE_NAME] [--cpus NUM] [--memory NUM_MB] [--disk NUM_MB]
-        [--iso PATH] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]
+        [--iso PATH] [--sharedFolder PATH] [USER_DATA_FILE] [CONFIGURATION_FILE]
 		
-Create a machine with specified user (contextualization) data.
+Create a machine with default or specified user (contextualization) data.
 By default, the machine is started right away (use `--no-start` to suppress that).
+
+If you do not provide a `USER_DATA_FILE`, you will be prompted if you want to use
+default user data.
+
+Default user data:
+
+    [amiconfig]
+    plugins=cernvm
+
+    [cernvm]
+    auto_login=on
+    organisations=
+    repositories=
+    shell=/bin/bash
+    config_url=http://cernvm.cern.ch/config
+    users=user:user:password
+    edition=Desktop
+    screenRes=1280x800
+    keyboard=us-acentos
+    startXDM=on
 
 When creating a machine, you may specify the parameters in several ways via:
 - command line arguments,

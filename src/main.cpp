@@ -22,7 +22,7 @@ using namespace Launch;
 namespace {
 
 //CernVM-Launch version
-const std::string VERSION = "0.9.2";
+const std::string VERSION = "0.9.3";
 
 //Module local functions
 bool CheckArgCount(int argc, int desiredCount, const std::string& errorMessageOnFail);
@@ -223,10 +223,6 @@ int HandleCreateRequest(int argc, char** argv, Launch::RequestHandler& handler) 
 
     if (argc <= 1 || std::string(argv[1]) != "create")
         return ERR_INVALID_OPERATION;
-    if (argc < 3) {
-        std::cerr << "'create' requires at least a 'user_data_file' argument" << std::endl;
-        return ERR_INVALID_PARAM_COUNT;
-    }
 
     for (int i=2; i < argc; ++i) { // go through argv
         if (std::string(argv[i]) == "--no-start") { // this flag has no value
@@ -263,11 +259,8 @@ int HandleCreateRequest(int argc, char** argv, Launch::RequestHandler& handler) 
         }
     }
     //handler.createMachine(useData, boolStartOpt, paramFileOpt)
-    //Generic format: ./cernvm-launch create [--no-start] [--memory NUM] [--disk NUM] [--cpus NUM] [--sharedFolder PATH] userData_file [config_file]
-    if (userDataFile.empty()) {
-        std::cerr << "'create' requires at least a 'user_data_file' argument" << std::endl;
-        return ERR_INVALID_PARAM_COUNT;
-    }
+    //Generic format: ./cernvm-launch create [--no-start] [--memory NUM] [--disk NUM] [--cpus NUM]
+    //                  [--sharedFolder PATH] [--iso PATH] [userData_file] [config_file]
 
     Tools::configMapType paramMap;
     if (! paramFile.empty()) {
@@ -397,8 +390,8 @@ void PrintHelp() {
     std::cout << "Usage: cernvm-launch OPTION\n"
               << "OPTIONS:\n"
               << "\tcreate [--no-start] [--name MACHINE_NAME] [--cpus NUM] [--memory NUM_MB] [--disk NUM_MB]\n"
-              << "\t       [--iso PATH] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]\n"
-              << "\t\tCreate a machine with specified user data.\n"
+              << "\t       [--iso PATH] [--sharedFolder PATH] [USER_DATA_FILE] [CONFIGURATION_FILE]\n"
+              << "\t\tCreate a machine with default or specified user data.\n"
               << "\tdestroy [--force] MACHINE_NAME\tDestroy an existing machine.\n"
               << "\timport [--no-start] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]\n"
               << "\t       [--cpus NUM] [--sharedFolder PATH] OVA_IMAGE_FILE [CONFIGURATION_FILE]\n"
