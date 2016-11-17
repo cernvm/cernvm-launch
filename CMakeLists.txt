@@ -33,7 +33,7 @@ set(SYSCONF_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/etc" CACHE STRING "The /etc con
 
 # CernVM-Launch
 project (cernvm-launch)
-set(VERSION "0.9.2")
+set(VERSION "0.9.3")
 
 # Create static library
 SET(BUILD_SHARED_LIBRARIES OFF)
