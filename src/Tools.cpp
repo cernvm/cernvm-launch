@@ -261,6 +261,8 @@ bool SetFlagsInString(std::string& flagsStr, int additionalFlags) {
     }
     numFlags |= additionalFlags;
     flagsStr = std::to_string(numFlags);
+
+    return true;
 }
 
 
