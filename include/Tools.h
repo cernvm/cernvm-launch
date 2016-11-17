@@ -48,6 +48,8 @@ namespace Tools {
     bool             LoadFileIntoString(const std::string& filename, std::string& output);
     //Print specified fields from the given paramMap
     void             PrintParameters(const std::vector<std::string>& fields, const ParameterMapPtr paramMap);
+    //Set additional binary mask flags in the given string
+    bool             SetFlagsInString(std::string& flagsStr, int additionalFlags);
 } //namespace Tools
 } //namespace Launch
 

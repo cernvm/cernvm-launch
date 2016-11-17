@@ -17,8 +17,8 @@ CernVM-Launch provides following operations.
 Create a virtual machine
 ------------------------
 
-	create [--no-start] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]
-           [--cpus NUM] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]
+    create [--no-start] [--name MACHINE_NAME] [--cpus NUM] [--memory NUM_MB] [--disk NUM_MB]
+        [--iso PATH] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]
 		
 Create a machine with specified user (contextualization) data.
 By default, the machine is started right away (use `--no-start` to suppress that).
@@ -33,6 +33,10 @@ Parameters are considered in the following precedence:
 Command line parameters > configuration file > global config > hardcoded defaults.
 
 When specifying `sharedFolder`, you must use a **canonical path**.
+
+If you want to use your own CernVM ISO image, specify `--iso` parameter with a path to your ISO file.
+If you omit this parameter, a CernVM ISO image is downloaded automatically, with respect to the `cernvmVersion`
+parameter.
 
 ### Configuration file
 When creating a machine, you can specify the creation parameters in a configuration file.

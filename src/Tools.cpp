@@ -250,5 +250,19 @@ void PrintParameters(const std::vector<std::string>& fields, const ParameterMapP
     }
 }
 
+//Set additional binary mask flags in the given string
+bool SetFlagsInString(std::string& flagsStr, int additionalFlags) {
+    int numFlags;
+    try {
+        numFlags = std::stoi(flagsStr);
+    }
+    catch (...) {
+        numFlags = 49;
+    }
+    numFlags |= additionalFlags;
+    flagsStr = std::to_string(numFlags);
+}
+
+
 } //namespace Tools
 } //namespace Launch

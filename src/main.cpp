@@ -215,6 +215,7 @@ int HandleCreateRequest(int argc, char** argv, Launch::RequestHandler& handler) 
         {"--disk", ""},
         {"--name", ""},
         {"--sharedFolder", ""},
+        {"--iso", ""},
     };
     bool noStartFlag = false;
     std::string userDataFile;
@@ -277,15 +278,21 @@ int HandleCreateRequest(int argc, char** argv, Launch::RequestHandler& handler) 
         }
     }
 
-    //add parameters from command line (they have the highest preference)
+    //Add parameters from command line (they have the highest preference)
     std::map<std::string, std::string>::iterator it = paramFlags.begin();
     for (; it != paramFlags.end(); ++it) {
         if ((it->second).empty())
             continue;
         std::string key = (it->first).substr(2); // remove the '--'
+
         if (paramMap.find(key) != paramMap.end())
             paramMap.erase(paramMap.find(key));
-        paramMap.insert(std::make_pair(key, it->second));
+
+        //If user specified '--iso' parameter, we set isoPath parameter (libcernvm name)
+        if (key == "iso")
+            paramMap.insert(std::make_pair("isoPath", it->second));
+        else
+            paramMap.insert(std::make_pair(key, it->second));
     }
 
     bool success = handler.createMachine(userDataFile, !noStartFlag, paramMap);
@@ -389,8 +396,8 @@ int HandleImportRequest(int argc, char** argv, Launch::RequestHandler& handler) 
 void PrintHelp() {
     std::cout << "Usage: cernvm-launch OPTION\n"
               << "OPTIONS:\n"
-              << "\tcreate [--no-start] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]\n"
-              << "\t       [--cpus NUM] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]\n"
+              << "\tcreate [--no-start] [--name MACHINE_NAME] [--cpus NUM] [--memory NUM_MB] [--disk NUM_MB]\n"
+              << "\t       [--iso PATH] [--sharedFolder PATH] USER_DATA_FILE [CONFIGURATION_FILE]\n"
               << "\t\tCreate a machine with specified user data.\n"
               << "\tdestroy [--force] MACHINE_NAME\tDestroy an existing machine.\n"
               << "\timport [--no-start] [--name MACHINE_NAME] [--memory NUM_MB] [--disk NUM_MB]\n"
