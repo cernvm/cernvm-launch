@@ -32,6 +32,8 @@ namespace Tools {
     configMapTypePtr GetGlobalConfig();
     //Prompts user for a value (terminated by Enter) and stores it outValue
     bool             GetUserInput(std::string& outValue);
+    //Check if given path is absolute
+    bool             IsAbsolutePath(const std::string& path);
     //Check if given path is canonical
     bool             IsCanonicalPath(const std::string& path);
     //Make absolute path from a given relative one
@@ -46,6 +48,8 @@ namespace Tools {
     bool             LoadFileIntoString(const std::string& filename, std::string& output);
     //Print specified fields from the given paramMap
     void             PrintParameters(const std::vector<std::string>& fields, const ParameterMapPtr paramMap);
+    //Set additional binary mask flags in the given string
+    bool             SetFlagsInString(std::string& flagsStr, int additionalFlags);
 } //namespace Tools
 } //namespace Launch
 

@@ -29,8 +29,7 @@ const std::string defaultConfigFileStrPartOne = \
 "# Folder on the host OS which will be shared to VMs\n"
 "sharedFolder=" + getHomeDir() + "\n"
 "# Folder on the host OS where all VM configuration files and images are stored (can get large)\n"
-"# Changing this folder will disconnect already existing machines from CernVM-Launch\n"
-"launchHomeFolder=";
+"# Changing this folder will disconnect already existing machines from CernVM-Launch\n";
 const std::string defaultConfigFileStrPartTwo = \
 "########### Default VM parameters ###########\n"
 "# VM's port connected to the host OS. Use 22 to have SSH access to the machine\n"
@@ -64,7 +63,7 @@ bool CreateDefaultGlobalConfig() {
 
 #if defined(__APPLE__) && defined(__MACH__) // we can't configure base dir on Mac (permissions)
     std::cout << "On Mac you can't configure launchHomeFolder\n";
-    launchDir = getDefaultAppDataBaseDir();
+    launchDir = "";
 
 #else // Linux and Win
     std::cout << "Enter a directory where do you want keep all CernVM-Launch files: VM images, disk files, etc. "
@@ -72,15 +71,18 @@ bool CreateDefaultGlobalConfig() {
               << "Enter directory [" << getDefaultAppDataBaseDir() << "]: ";
     if (!GetUserInput(launchDir))
         launchDir = getDefaultAppDataBaseDir();
-    else if (! IsCanonicalPath(launchDir)) {
+    else if (! IsCanonicalPath(launchDir) && ! IsAbsolutePath(launchDir)) {
         std::string defaultPath = getDefaultAppDataBaseDir();
-        std::cerr << "Given path '" << launchDir << "' is not canonical, using default: '" << defaultPath << "'.\n";
+        std::cerr << "Given path '" << launchDir << "' is not an absolute path, using default: '" << defaultPath << "'.\n";
         std::cerr << "You can change it later in the config file.\n";
         launchDir = defaultPath;
     }
 #endif
 
-    ofs << defaultConfigFileStrPartOne << launchDir << "\n" << defaultConfigFileStrPartTwo; //ofs is closed on object destroy
+    if (!launchDir.empty())
+        launchDir = "launchHomeFolder=" + launchDir + "\n";
+
+    ofs << defaultConfigFileStrPartOne << launchDir << defaultConfigFileStrPartTwo; //ofs is closed on object destroy
 
     return true;
 }
@@ -117,7 +119,21 @@ bool GetUserInput(std::string& outValue) {
     return true;
 }
 
+//Check if the path is absolute
+bool IsAbsolutePath(const std::string& path) {
+    boost::filesystem::path absolutePath;
+    try {
+        absolutePath = boost::filesystem::absolute(path);
+    }
+    catch (boost::filesystem::filesystem_error& e) {
+        return false;
+    }
+
+    return absolutePath == boost::filesystem::path(path);
+}
+
 //We construct an canonical path for the given path. If they differ, the given one was not canonical
+//The path does have to exist
 bool IsCanonicalPath(const std::string& path) {
     boost::filesystem::path canonicalPath;
     try {
@@ -130,7 +146,7 @@ bool IsCanonicalPath(const std::string& path) {
     return canonicalPath == boost::filesystem::path(path);
 }
 
-//Make a canonical path from a relative one
+//Make an absolute path from a relative one
 bool MakeAbsolutePath(const std::string& path, std::string& outPath) {
     boost::filesystem::path absolutePath;
     try {
@@ -233,6 +249,22 @@ void PrintParameters(const std::vector<std::string>& fields, const ParameterMapP
             std::cout << "\t" << *it << ": " << value << std::endl;
     }
 }
+
+//Set additional binary mask flags in the given string
+bool SetFlagsInString(std::string& flagsStr, int additionalFlags) {
+    int numFlags;
+    try {
+        numFlags = std::stoi(flagsStr);
+    }
+    catch (...) {
+        numFlags = 49;
+    }
+    numFlags |= additionalFlags;
+    flagsStr = std::to_string(numFlags);
+
+    return true;
+}
+
 
 } //namespace Tools
 } //namespace Launch

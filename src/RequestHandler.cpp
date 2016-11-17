@@ -215,6 +215,9 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
         std::cerr << "Unable to detect hypervisor\n";
         return false;
     }
+
+    Tools::configMapType::iterator it;
+
     if (!userDataFile.empty()) { //user wants to provide the user data
         std::string userData;
         bool res = Tools::LoadFileIntoString(userDataFile, userData);
@@ -224,7 +227,7 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
             return false;
         }
         //if user accidentally specified userData in parameter map file, we overwrite it
-        Tools::configMapType::iterator it = paramMap.find("userData");
+        it = paramMap.find("userData");
         if (it != paramMap.end()) {
             std::cout << "Ignoring the userData specified in the parameter file, using userData file instead\n";
             paramMap.erase(it);
@@ -240,6 +243,32 @@ bool RequestHandler::createMachine(const std::string& userDataFile, bool startMa
 
     //Load missing values from the hardcoded config
     Tools::AddMissingValuesToMap(paramMap, DefaultCreationParams);
+
+    //If user wants to create the machine from his own ISO, we need to let libcernvm know
+    if (paramMap.find("isoPath") != paramMap.end()) {
+        std::string isoPath = paramMap.at("isoPath");
+        if (! file_exists(isoPath)) {
+            std::cerr << "Provided ISO path '" << isoPath << "' does not exist or is not readable\n";
+            return false;
+        }
+
+        //Set the import flag
+        std::string flags;
+        it = paramMap.find("flags");
+        if (it == paramMap.end())
+            flags = "49";
+        else {
+            flags = it->second;
+            paramMap.erase(it);
+        }
+
+        Tools::SetFlagsInString(flags, HVF_DEPLOYMENT_ISO_LOCAL);
+        paramMap.insert(std::make_pair("flags", flags));
+
+        //We don't know what CernVM ISO version user provided, so we just set the cernvmVersion to the given path
+        paramMap.erase(paramMap.find("cernvmVersion"));
+        paramMap.insert(std::make_pair("cernvmVersion", isoPath));
+    }
 
     //Convert the parameter map from std::map
     ParameterMapPtr parameters = ParameterMap::instance();
@@ -337,15 +366,9 @@ bool RequestHandler::importMachine(const std::string& imageFilename, bool startM
         flags = it->second;
         paramMap.erase(it);
     }
-    int numFlags;
-    try {
-        numFlags = std::stoi(flags);
-    }
-    catch (...) {
-        numFlags = 49;
-    }
-    numFlags |= HVF_IMPORT_OVA;
-    flags = std::to_string(numFlags);
+
+    Tools::SetFlagsInString(flags, HVF_IMPORT_OVA);
+
     paramMap.insert(std::make_pair("flags", flags));
 
     return this->createMachine("", startMachine, paramMap); // no user data file
@@ -541,6 +564,13 @@ bool CheckCreationParameters(ParameterMapPtr params) {
             //we need diskPath
             if ((params->get("diskPath", "")).empty()) {
                 std::cerr << "You need to provide 'diskPath' parameter for deployment from a local file\n";
+                return false;
+            }
+        }
+        if (flags & HVF_DEPLOYMENT_ISO_LOCAL) {
+            //we need isoPath
+            if ((params->get("isoPath", "")).empty()) {
+                std::cerr << "You need to provide 'isoPath' parameter for deployment from a local ISO file\n";
                 return false;
             }
         }
