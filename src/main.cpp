@@ -53,9 +53,6 @@ int main(int argc, char** argv) {
 
     Tools::configMapTypePtr configMap = Tools::GetGlobalConfig();
     if (configMap) {
-#if defined(__APPLE__) && defined(__MACH__) // we can't configure base dir on Mac (permissions)
-        ;
-#else //Windows and Linux
         if (configMap->find("launchHomeFolder") != configMap->end()) {
             std::string canonLaunchPath;
             if (!Tools::MakeAbsolutePath(configMap->at("launchHomeFolder"), canonLaunchPath)) {
@@ -73,7 +70,6 @@ int main(int argc, char** argv) {
             if (! ret)
                 std::cerr << "Unable to set launchHomeFolder to: " << configMap->at("launchHomeFolder") << std::endl;
         }
-#endif
     }
     else
         return ERR_RUNTIME_ERROR; //error message is printed by GetGlobalConfig
