@@ -60,16 +60,29 @@ bool CreateDefaultGlobalConfig() {
 
     std::cout << "Creating a new global config: " << GLOBAL_CONFIG_FILENAME << std::endl;
     std::string launchDir;
+    std::string defaultPath = getDefaultAppDataBaseDir();
 
     std::cout << "Enter a directory where do you want keep all CernVM-Launch files: VM images, disk files, etc. "
               << "These files can grow substantially.\n"
-              << "Enter directory [" << getDefaultAppDataBaseDir() << "]: ";
+              << "Enter directory [" << defaultPath << "]: ";
     if (!GetUserInput(launchDir))
-        launchDir = getDefaultAppDataBaseDir();
+        launchDir = defaultPath;
     else if (! IsCanonicalPath(launchDir) && ! IsAbsolutePath(launchDir)) {
-        std::string defaultPath = getDefaultAppDataBaseDir();
         std::cerr << "Given path '" << launchDir << "' is not an absolute path, using default: '" << defaultPath << "'.\n";
         std::cerr << "You can change it later in the config file.\n";
+        launchDir = defaultPath;
+    }
+
+    //check if we can create the directory
+    try {
+        boost::filesystem::create_directories(launchDir);
+    }
+    catch (boost::filesystem::filesystem_error& e) {
+        std::string errStr = e.what();
+        errStr = errStr.substr(errStr.find(": ")+2); // strip 'boost::filesystem::create_directory
+        std::cerr << "Cannot create a directory: " << errStr << std::endl;
+        std::cout << "Using default launchHomeFolder: '" << defaultPath
+                  << "' (you can later change it in the config file)\n";
         launchDir = defaultPath;
     }
 
@@ -161,7 +174,7 @@ bool LoadGlobalConfig(std::map<const std::string, const std::string>& outMap) {
     bool success = Tools::LoadFileIntoMap(GLOBAL_CONFIG_FILENAME, outMap);
 
     if (! success) {
-        std::cout << "Unable to load global config file: " << GLOBAL_CONFIG_FILENAME << std::endl;
+        std::cout << "Unable to load the global config file: " << GLOBAL_CONFIG_FILENAME << std::endl;
         return false;
     }
 
