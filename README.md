@@ -8,6 +8,7 @@ Requirements
 ============
 
 - VirtualBox has to be installed in a default location.
+- You have to use a 64bit OS (we only provide 64bit executables)
 
 Usage
 =====
@@ -19,7 +20,7 @@ Create a virtual machine
 ------------------------
 
     create [--no-start] [--name MACHINE_NAME] [--cpus NUM] [--memory NUM_MB] [--disk NUM_MB]
-        [--iso PATH] [--sharedFolder PATH] [USER_DATA_FILE] [CONFIGURATION_FILE]
+           [--iso PATH] [--sharedFolder PATH] [USER_DATA_FILE] [CONFIGURATION_FILE]
 		
 Create a machine with default or specified user (contextualization) data.
 By default, the machine is started right away (use `--no-start` to suppress that).
@@ -198,7 +199,6 @@ On Windows:
     ${USERPROFILE}\.cernvm-launch.conf
 
 When specifying `launchHomeFolder` and `sharedFolder`, you must use **canonical paths**.
-For the moment, `launchHomeFolder` is not supported on Mac OS.
 
 Config file example with all recognized items:
 
