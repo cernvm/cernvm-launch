@@ -61,11 +61,6 @@ bool CreateDefaultGlobalConfig() {
     std::cout << "Creating a new global config: " << GLOBAL_CONFIG_FILENAME << std::endl;
     std::string launchDir;
 
-#if defined(__APPLE__) && defined(__MACH__) // we can't configure base dir on Mac (permissions)
-    std::cout << "On Mac you can't configure launchHomeFolder\n";
-    launchDir = "";
-
-#else // Linux and Win
     std::cout << "Enter a directory where do you want keep all CernVM-Launch files: VM images, disk files, etc. "
               << "These files can grow substantially.\n"
               << "Enter directory [" << getDefaultAppDataBaseDir() << "]: ";
@@ -77,7 +72,6 @@ bool CreateDefaultGlobalConfig() {
         std::cerr << "You can change it later in the config file.\n";
         launchDir = defaultPath;
     }
-#endif
 
     if (!launchDir.empty())
         launchDir = "launchHomeFolder=" + launchDir + "\n";
