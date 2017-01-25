@@ -194,7 +194,6 @@ bool RequestHandler::listMachineDetail(const std::string& machineName) {
 
     const std::vector<std::string> localFields = {
         "baseFolder",
-        "rdpPort"
     };
 
     Tools::PrintParameters(parametersFields, session->parameters);
