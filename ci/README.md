@@ -32,11 +32,12 @@ This job depends on a previous successful execution of the CernVM-Launch job, wh
 ### Test if a VM is running
 
 After all tests in the `./ci/tests/` directory are passed, we test whether we can run a command inside a created VM.
-Internally, the `test.py` script creates a `launch_running_machine` VM via CernVM-Launch utility and then runs
-an external command (`VBoxManage guestcontrol`), which simply prints out the `/etc/issue` file (from inside of the VM). This external
+
+Internally, the `test.py` script creates a `launch_running_machine` VM via the CernVM-Launch utility and then runs
+an external command (`VBoxManage guestcontrol`), which simply prints out the `/etc/issue` file (from the inside of the VM). This external
 command runs the script `run_inside_vm.py` in the host OS, which is accessed via the default shared folder.
 
-**Important: Currently we only run this test on the Mac machine, because it is our only real physical machine.**
+**Important: Currently we run this test only on the Mac machine, because it is our only real physical machine.**
 
 ### Test file format
 

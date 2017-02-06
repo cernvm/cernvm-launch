@@ -104,7 +104,7 @@ def Main(vmName=None, username=None, password=None):
 
     vbox = GetVBoxBinary()
     if not vbox:
-        print("Unable to locate VBoxManage binary, make sure VirtualBox is installed in a default location")
+        print("\tUnable to locate VBoxManage binary, make sure VirtualBox is installed in a default location")
         return 1
 
     runningVms = GetRunningVms(vbox)
@@ -119,10 +119,10 @@ def Main(vmName=None, username=None, password=None):
     # Create a script path from the VM perspective
     testScriptPath = os.path.join('/mnt/shared/%s_sf/' % vmName, insideScriptRelPath)
 
-    print("Trying to run test script from inside VM: %s" % testScriptPath)
+    print("\tTrying to run test script from inside VM: %s" % testScriptPath)
 
     if not vmName in runningVms:
-        print("VM %s is not running, doing nothing" % vmName)
+        print("\tVM %s is not running, doing nothing" % vmName)
         return 2
 
     # Create a VBoxManage command, example:
@@ -146,11 +146,11 @@ def Main(vmName=None, username=None, password=None):
 
     stdout, stderr, ec = RunCmd(cmd)
     if ec == 0:
-        print("\nVM running test successful, see the output:\n")
-        print(stdout.strip().replace('\n', '\n\t'))
+        print("\n\tVM running test successful, see the output:\n")
+        print(stdout.replace('\n', '\n\t').strip())
         return 0
     else:
-        print("\nAn error occurred:", stderr)
+        print("\n\tAn error occurred:", stderr)
         return 3
 
 
