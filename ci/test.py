@@ -88,7 +88,7 @@ def RunRunningTest():
     # Create the machine
     launchBinary = FindExecutable()
     if not launchBinary:
-        print("Unable to find a CernVM-Launch binary")
+        print("\tUnable to find a CernVM-Launch binary")
         return -1
 
     cmdList = (
@@ -102,13 +102,14 @@ def RunRunningTest():
 
     _, __, ec = RunCmd(cmdList)
     if ec != 0:
-        print("Unable to create a testing VM")
+        print("\tUnable to create a testing VM")
         return 1
     # Sleep for 5 mins (wait for the VM to boot and contextualize)
-    print("Sleeping for 5 minutes, waiting for the testing VM to boot")
+    print("\tSleeping for 5 minutes, waiting for the testing VM to boot")
     time.sleep(300)
 
-    ec = RunningMain(vmName='test', username='atlas', password='boson')
+    # User atlas with pwd 'boson' is created by our user data file
+    ec = RunningMain(vmName='launch_running_machine', username='atlas', password='boson')
 
     # Destroy the machine
     cmdList = (
@@ -123,7 +124,7 @@ def RunRunningTest():
         #Unable to destroy the testing VM via Launch utility, try VirtualBox
         vbox = GetVBoxBinary()
         if not vbox:
-            print("Unable to find VirtualBox, you have to delete the 'launch_running_machine' VM by yourself")
+            print("\tUnable to find VirtualBox, you have to delete the 'launch_running_machine' VM by yourself")
             return 98
         cmdList = (
             vbox,
@@ -133,7 +134,7 @@ def RunRunningTest():
         )
         _, __, ecc = RunCmd(cmdList)
         if ecc != 0:
-            print("Unable to delete the VM, you have to delete the 'launch_running_machine' VM by yourself")
+            print("\tUnable to delete the VM, you have to delete the 'launch_running_machine' VM by yourself")
 
     return ec
 
