@@ -33,7 +33,7 @@ set(SYSCONF_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/etc" CACHE STRING "The /etc con
 
 # CernVM-Launch
 project (cernvm-launch)
-set(VERSION "0.9.3")
+set(VERSION "1.0.0")
 
 # Create static library
 SET(BUILD_SHARED_LIBRARIES OFF)
@@ -215,6 +215,12 @@ if (WIN32)
 
 	# Fix: For some reason CURL_STATICLIB is not defined
     add_definitions(-DCURL_STATICLIB)
+
+    # Disable passed values in iterator check (shows warnings in Boost)
+    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+
+    # Disable gmtime usage check (might be unsafe)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
     # Fix: OpenSSL builds are not built with safe exception handlers
     # Fix2: without subsystem:console in does not find main function
