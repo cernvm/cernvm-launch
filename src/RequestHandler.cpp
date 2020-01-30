@@ -629,14 +629,14 @@ std::string PromptForMachineName(const std::string& defaultValue) {
 //is true, we load sessions on the hypervisor. Defaults to false.
 HVSessionPtr FindSessionByName(const std::string& machineName, HVInstancePtr& hypervisor, bool loadSessions) {
     if (!hypervisor)
-        return NULL;
+        return HVSessionPtr();
 
     if (loadSessions)
         hypervisor->loadSessions();
 
     HVSessionPtr session = hypervisor->sessionByName(machineName);
     if (!session)
-        return NULL;
+        return HVSessionPtr();
 
     //we found our session, try to open it
     ParameterMapPtr sessParamMap = session->parameters;
@@ -646,7 +646,7 @@ HVSessionPtr FindSessionByName(const std::string& machineName, HVInstancePtr& hy
     //open the session, i.e. start the FSM thread
     session = hypervisor->sessionOpen(sessParamMap, pOpen, false); //bypass verification, we're locals
     if (!session)
-        return NULL;
+        return HVSessionPtr();
     session->wait();
 
     return session;
