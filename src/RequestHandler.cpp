@@ -507,11 +507,12 @@ bool RequestHandler::sshIntoMachine(const std::string& machineName) {
         std::cerr << "No ssh port found for this machine\n";
         return false;
     }
+    std::string x11String = "-Y";
     std::string portString = "-p " + port;
     std::string fullAddress = username + "@127.0.0.1";
 
-
-    int res = execl(sshBin.c_str(), sshBin.c_str(), portString.c_str(), fullAddress.c_str(), (char*) NULL);
+    int res = execl(sshBin.c_str(), sshBin.c_str(), x11String.c_str(), portString.c_str(), fullAddress.c_str(),
+                    (char*) NULL);
     if (res == -1) {
         std::cerr << "Unable to launch ssh\n";
         return false;

@@ -1,0 +1,4 @@
+1.1.0:
+  * Fix VBoxManage >= 6.1 command-line options
+  * Add -Y option to ssh command
+
