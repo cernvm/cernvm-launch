@@ -6,10 +6,10 @@ CONFIG=Release
 BUILDDIR=build
 
 # Let's use a newer compiler
-#export CMAKE_C_COMPILER='/opt/rh/devtoolset-2/root/usr/bin/gcc'
-#export CMAKE_CXX_COMPILER='/opt/rh/devtoolset-2/root/usr/bin/g++'
-#export CC='/opt/rh/devtoolset-2/root/usr/bin/gcc'
-#export CXX='/opt/rh/devtoolset-2/root/usr/bin/g++'
+export CMAKE_C_COMPILER='/opt/rh/devtoolset-8/root/usr/bin/gcc'
+export CMAKE_CXX_COMPILER='/opt/rh/devtoolset-8/root/usr/bin/g++'
+export CC='/opt/rh/devtoolset-8/root/usr/bin/gcc'
+export CXX='/opt/rh/devtoolset-8/root/usr/bin/g++'
 
 if [ ! -z "$1" ]; then
 	[ "$1" != "Debug" -a "$1" != "Release" ] && echo "Configuration can either be 'Debug' or 'Release'!" && exit 1  
