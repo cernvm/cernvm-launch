@@ -3,7 +3,7 @@ Technical overview
 
 CernVM-Launch comprises of two parts: `libcernvm` and `Launch`.
 
-libcernvm 
+libcernvm
 =========
 
 The core for interacting with VirtualBox, originally developed by Ioannis Charalampidis
@@ -16,7 +16,7 @@ storage, network, port forwarding, shared folder, etc.
 
 All VM interaction is encapsulated into a *session* (not to be mistaken with a web session).
 This session tracks the VM state via state machine and session configuration file. This file
-contains all information about the machine: provided by both VirtualBox and user. 
+contains all information about the machine: provided by both VirtualBox and user.
 
 CernVM creation
 ---------------
@@ -31,7 +31,7 @@ creation is a part of `libcernvm`. It has a hardcoded byte layout of the resulti
 it appends/replaces its variable parts: file sizes and file contents.
 
 The resulting ISO image layout is following:
-    
+
     /
     ├── ec2
     │   └── latest
@@ -51,7 +51,7 @@ in order to be found by all contextualization clients.
 Following VirtualBox VBoxManage commands are roughly equivalent to a standard CernVM creation.
 
     # Create a VM
-    VBoxManage create --name NAME --ostype Linux26_64 --basefolder FOLDER --register
+    VBoxManage createvm --name NAME --ostype Linux26_64 --basefolder FOLDER --register
     # Add IDE controller
     VBoxManage storagectl MACHINE_NAME --name IDE --add ide
     # Add SATA controller
@@ -59,7 +59,7 @@ Following VirtualBox VBoxManage commands are roughly equivalent to a standard Ce
     # Add floppy controller
     VBoxManage storagectl MACHINE_NAME --name Floppy --add floppy
     # Configure basic parameters
-    VBoxManage modifyvm MACHINE_NAME --cpus N --memory N --vram N --acpi on --ioapic on
+    VBoxManage modifyvm MACHINE_NAME --cpus N --memory N --vram N --acpi on --ioapic on [VBox 6.1: --graphicscontroller vboxsvga]
     # Configure VRDE
     VBoxManage modifyvm MACHINE_NAME --vrde on --vrdeaddress 127.0.0.1 --vrdeauthtype null --vrdemulticon on --vrdeport N
     # Set boot medium (type 'disk' for other deployments)

@@ -9,13 +9,19 @@ if [ ! -z "$1" ]; then
 	shift
 fi
 
+if [ ! -z "$1" ]; then
+	BUILDDIR="$1"
+	shift
+fi
+
 echo "Acquiring required submodules [requires git]..."
 git submodule init
 git submodule update
 
 echo "Using following configuration: $CONFIG"
+echo "Setting up build environment in $BUILDDIR"
 
-[ ! -d $BUILDDIR ] && mkdir $BUILDDIR
+mkdir -p $BUILDDIR
 set -e
 cd $BUILDDIR
 cmake .. -Wno-dev -DCMAKE_BUILD_TYPE=${CONFIG} -DTARGET_ARCH="x86_64" $*

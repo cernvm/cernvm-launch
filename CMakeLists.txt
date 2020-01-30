@@ -33,7 +33,7 @@ set(SYSCONF_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/etc" CACHE STRING "The /etc con
 
 # CernVM-Launch
 project (cernvm-launch)
-set(VERSION "1.0.0")
+set(VERSION "1.1.0")
 
 # Create static library
 SET(BUILD_SHARED_LIBRARIES OFF)
@@ -49,42 +49,42 @@ else()
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 endif()
 
-############################################################################################################ 
+############################################################################################################
 # AddCompileLinkFlags module
 ############################################################################################################
-# Append str to a string property of a target. 
-# target:      string: target name. 
-# property:            name of target’s property. e.g: COMPILE_FLAGS, or LINK_FLAGS 
-# str:         string: string to be appended to the property 
-macro(append_target_property target property str) 
-  get_target_property(current_property ${target} ${property}) 
-  if(NOT current_property) # property non-existent or empty 
-      set_target_properties(${target} PROPERTIES ${property} ${str}) 
-  else() 
-      set_target_properties(${target} PROPERTIES ${property} "${current_property} ${str}") 
-  endif() 
+# Append str to a string property of a target.
+# target:      string: target name.
+# property:            name of target’s property. e.g: COMPILE_FLAGS, or LINK_FLAGS
+# str:         string: string to be appended to the property
+macro(append_target_property target property str)
+  get_target_property(current_property ${target} ${property})
+  if(NOT current_property) # property non-existent or empty
+      set_target_properties(${target} PROPERTIES ${property} ${str})
+  else()
+      set_target_properties(${target} PROPERTIES ${property} "${current_property} ${str}")
+  endif()
 endmacro(append_target_property)
 
-############################################################################################################ 
-# Add/append compile flags to a target. 
-# target: string: target name. 
-# flags : string: compile flags to be appended 
-macro(add_compile_flags target flags) 
-  append_target_property(${target} COMPILE_FLAGS ${flags}) 
+############################################################################################################
+# Add/append compile flags to a target.
+# target: string: target name.
+# flags : string: compile flags to be appended
+macro(add_compile_flags target flags)
+  append_target_property(${target} COMPILE_FLAGS ${flags})
 endmacro(add_compile_flags)
 
-############################################################################################################ 
-# Add/append link flags to a target. 
-# target: string: target name. 
-# flags : string: link flags to be appended 
-macro(add_link_flags target flags) 
-  append_target_property(${target} LINK_FLAGS ${flags}) 
-endmacro(add_link_flags) 
+############################################################################################################
+# Add/append link flags to a target.
+# target: string: target name.
+# flags : string: link flags to be appended
+macro(add_link_flags target flags)
+  append_target_property(${target} LINK_FLAGS ${flags})
+endmacro(add_link_flags)
 
 
 
 #############################################################
-# CERNVM LIBRARY 
+# CERNVM LIBRARY
 #############################################################
 
 # CernVM Library sources
@@ -96,7 +96,7 @@ add_subdirectory( ${CERNVM_LIBSRC} libcernvm )
 include_directories( ${CERNVM_INCLUDE_DIRS} )
 
 #############################################################
-# LIBRARIES 
+# LIBRARIES
 #############################################################
 
 # For every library, we give the option to the project that
@@ -115,7 +115,7 @@ include_directories( ${CERNVM_INCLUDE_DIRS} )
 
 
 #############################################################
-# SOURCES 
+# SOURCES
 #############################################################
 
 # Add custom definitions
@@ -140,7 +140,7 @@ endif()
 
 
 # Locate the daemon sources
-file (GLOB LAUNCH_SOURCE_FILES 
+file (GLOB LAUNCH_SOURCE_FILES
 		${PROJECT_SOURCE_DIR}/src/*.cpp
 	)
 
@@ -257,7 +257,7 @@ target_link_libraries ( ${PROJECT_NAME} ${PROJECT_LIBRARIES} )
 if (APPLE)
 	target_link_libraries ( ${PROJECT_NAME} ${FRAMEWORK_FOUNDATION} )
 	target_link_libraries ( ${PROJECT_NAME} ${FRAMEWORK_COCOA} )
-	set_target_properties( ${PROJECT_NAME} PROPERTIES 
+	set_target_properties( ${PROJECT_NAME} PROPERTIES
 		MACOSX_BUNDLE_INFO_PLIST ${PLATFORM_DIR}/Info.plist
 	)
 
