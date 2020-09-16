@@ -22,7 +22,7 @@ using namespace Launch;
 namespace {
 
 //CernVM-Launch version
-const std::string VERSION = "1.1.0";
+const std::string VERSION = "1.2.0";
 
 //Module local functions
 bool CheckArgCount(int argc, int desiredCount, const std::string& errorMessageOnFail);
@@ -394,7 +394,7 @@ void PrintHelp() {
               << "\t\tCreate a new machine from an OVA image.\n"
               << "\tlist [--running] [MACHINE_NAME]\tList all existing machines or a detailed info about one.\n"
               << "\tpause MACHINE_NAME\tPause a running machine.\n"
-              << "\tssh MACHINE_NAME\tSSH into an existing machine.\n"
+              << "\tssh [user@]MACHINE_NAME\tSSH into an existing machine.\n"
               << "\tstart MACHINE_NAME\tStart an existing machine.\n"
               << "\tstop MACHINE_NAME\tStop a running machine.\n"
               << "\t-v, --version\t\tPrint version.\n"

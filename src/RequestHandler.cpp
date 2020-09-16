@@ -463,7 +463,7 @@ bool RequestHandler::pauseMachine(const std::string& machineName) {
 }
 
 
-bool RequestHandler::sshIntoMachine(const std::string& machineName) {
+bool RequestHandler::sshIntoMachine(const std::string& login) {
 #ifdef _WIN32
     std::cerr << "SSH into machine is not supported on Windows\n";
     return false;
@@ -474,6 +474,14 @@ bool RequestHandler::sshIntoMachine(const std::string& machineName) {
         return false;
     }
     hv->loadSessions();
+
+    std::string machineName = login;
+    std::string username;
+    std::vector<std::string> tokens = Tools::SplitString(login, '@', 2);
+    if (tokens.size() == 2) {
+        machineName = tokens[1];
+        username = tokens[0];
+    }
 
     HVSessionPtr session = hv->sessionByName(machineName);
     if (!session) {
@@ -487,11 +495,12 @@ bool RequestHandler::sshIntoMachine(const std::string& machineName) {
     }
 
     //Prompt username
-    std::string username;
-    std::cout << "Username: ";
-    if (!Tools::GetUserInput(username)) {
-        std::cerr << "Username is mandatory, exiting";
-        return false;
+    if (username.empty()) {
+        std::cout << "Username: ";
+        if (!Tools::GetUserInput(username)) {
+            std::cerr << "Username is mandatory, exiting";
+            return false;
+        }
     }
 
     //Exec should look like this: ssh -p PORT_NUM USER@127.0.0.1

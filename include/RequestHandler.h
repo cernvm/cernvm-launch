@@ -52,7 +52,7 @@ class RequestHandler {
         bool pauseMachine(const std::string& machineName);
         //SSH into machine. It find an SSH executable and replaces cernvm-launch binary
         //with this binary (execv). Does not work on Windows.
-        bool sshIntoMachine(const std::string& machineName);
+        bool sshIntoMachine(const std::string& login);
         //Start machine. The machine can be either paused or stopped
         bool startMachine(const std::string& machineName);
         //Stop machine. Saves the state, does not do a power off

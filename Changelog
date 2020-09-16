@@ -1,3 +1,6 @@
+1.2.0:
+  * Allow for using a user name in the ssh command
+
 1.1.0:
   * Fix VBoxManage >= 6.1 command-line options
   * Add -Y option to ssh command

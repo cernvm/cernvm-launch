@@ -182,6 +182,37 @@ bool LoadGlobalConfig(std::map<const std::string, const std::string>& outMap) {
 }
 
 
+std::vector<std::string> SplitString(const std::string &str, const char delim,
+                                     const unsigned max_chunks) {
+  std::vector<std::string> result;
+
+  // edge case... one chunk is always the whole string
+  if (1 == max_chunks) {
+    result.push_back(str);
+    return result;
+  }
+
+  // split the string
+  const unsigned size = str.size();
+  unsigned marker = 0;
+  unsigned chunks = 1;
+  unsigned i;
+  for (i = 0; i < size; ++i) {
+    if (str[i] == delim) {
+      result.push_back(str.substr(marker, i - marker));
+      marker = i + 1;
+
+      // we got what we want... good bye
+      if (++chunks == max_chunks) break;
+    }
+  }
+
+  // push the remainings of the string and return
+  result.push_back(str.substr(marker));
+  return result;
+}
+
+
 //Load <string,string> map from a file with key=value items.
 //Lines starting with '#' are considered as comments, thus ignored.
 //Lines without KEY_VALUE_SEPARATOR (i.e. '=') are ignored as well

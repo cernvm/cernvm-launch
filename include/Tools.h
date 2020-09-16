@@ -50,6 +50,9 @@ namespace Tools {
     void             PrintParameters(const std::vector<std::string>& fields, const ParameterMapPtr paramMap);
     //Set additional binary mask flags in the given string
     bool             SetFlagsInString(std::string& flagsStr, int additionalFlags);
+
+    std::vector<std::string> SplitString(const std::string &str, const char delim,
+                                         const unsigned max_chunks);
 } //namespace Tools
 } //namespace Launch
 
